@@ -86,15 +86,29 @@ class BertLayer(nn.Module):
   def add_norm(self, input, output, dense_layer, dropout, ln_layer):
     """
     this function is applied after the multi-head attention layer or the feed forward layer
-    input: the input of the previous layer
+    input: the input of the previous layer  
     output: the output of the previous layer
     dense_layer: used to transform the output
     dropout: the dropout to be applied 
     ln_layer: the layer norm to be applied
     """
     # Hint: Remember that BERT applies to the output of each sub-layer, before it is added to the sub-layer input and normalized 
-    ### TODO
-    raise NotImplementedError
+    
+    # Each sub-layer in each encoder has a residual connection around it leading to layer-normalisation
+    
+    # Need to combine input and output
+    residual = input + output
+    
+    # Apply normalisation
+    norm_output = ln_layer(residual)
+    
+    # I am not sure if dropout is best applied at this part of the code but dropout adds regularisation
+    dropout_norm_output = dropout(norm_output)
+    
+    # Introduce non-linearity with dense_layer
+    transformed_norm_output = dense_layer(dropout_norm_output)
+    
+    return transformed_norm_output
 
 
   def forward(self, hidden_states, attention_mask):
@@ -104,7 +118,7 @@ class BertLayer(nn.Module):
     each block consists of 
     1. a multi-head attention layer (BertSelfAttention)
     2. a add-norm that takes the input and output of the multi-head attention layer
-    3. a feed forward layer
+    3. a feed forward layer 
     4. a add-norm that takes the input and output of the feed forward layer
     """
     ### TODO
