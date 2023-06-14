@@ -86,7 +86,7 @@ class BertLayer(nn.Module):
   def add_norm(self, input, output, dense_layer, dropout, ln_layer):
     """
     this function is applied after the multi-head attention layer or the feed forward layer
-    input: the input of the previous layer  
+    input: the input of the previous layer
     output: the output of the previous layer
     dense_layer: used to transform the output
     dropout: the dropout to be applied 
