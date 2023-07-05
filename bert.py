@@ -47,7 +47,38 @@ class BertSelfAttention(nn.Module):
     # next, we need to concat multi-heads and recover the original shape [bs, seq_len, num_attention_heads * attention_head_size = hidden_size]
 
     ### TODO
-    raise NotImplementedError
+    key = torch.transpose(key,0,1)
+    query = torch.transpose(query,0,1)
+    value = torch.transpose(value,0,1)
+
+    key_transposed = torch.transpose(key,2,3)
+
+    query_head_list = torch.split(query, 1, dim=0)
+    key_transposed_head_list = torch.split(key_transposed, 1, dim=0)
+    value_head_list = torch.split(value, 1, dim=0)
+
+    dk = key.shape[3]
+    seq_len = key.shape[2]
+    repeated_attention_mask = attention_mask.repeat(seq_len,1,1).transpose(0,1)
+    # Initialize an empty list to store the result
+    result_list = []
+
+
+    # Perform matrix multiplication for each pair of tensors
+    for Query, Key, Value in zip(query_head_list, key_transposed_head_list, value_head_list):
+       
+        result_tensor = torch.matmul(Query, Key)
+        result_tensor = result_tensor.masked_fill(repeated_attention_mask==0,-99999999999)
+        result_tensor =result_tensor/math.sqrt(dk)
+        
+        result_tensor = torch.nn.functional.softmax(result_tensor,dim=-1)
+        result_tensor = torch.matmul(result_tensor,Value)
+
+        result_list.append(result_tensor)
+
+    concatenated_tensor = torch.cat(result_list, dim=0)
+
+    return concatenated_tensor
 
 
   def forward(self, hidden_states, attention_mask):
