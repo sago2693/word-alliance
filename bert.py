@@ -47,12 +47,13 @@ class BertSelfAttention(nn.Module):
     # next, we need to concat multi-heads and recover the original shape [bs, seq_len, num_attention_heads * attention_head_size = hidden_size]
 
     ### TODO
+    #Initial dimensions: [bs, num_attention_heads, seq_len, attention_head_size]
     key = torch.transpose(key,0,1)
     query = torch.transpose(query,0,1)
     value = torch.transpose(value,0,1)
-
+    #Change to [num_attention_heads,bs seq_len, attention_head_size]
     key_transposed = torch.transpose(key,2,3)
-
+    #Change to [num_attention_heads,bs, attention_head_size, seq_len]
     query_head_list = torch.split(query, 1, dim=0)
     key_transposed_head_list = torch.split(key_transposed, 1, dim=0)
     value_head_list = torch.split(value, 1, dim=0)
@@ -63,20 +64,24 @@ class BertSelfAttention(nn.Module):
     # Initialize an empty list to store the result
     result_list = []
 
-
     # Perform matrix multiplication for each pair of tensors
     for Query, Key, Value in zip(query_head_list, key_transposed_head_list, value_head_list):
        
         result_tensor = torch.matmul(Query, Key)
+        # result tensor size [BS,seq_len, seq_len]
+        # attention_mask [BS, seq_len]
         result_tensor = result_tensor.masked_fill(repeated_attention_mask==0,-99999999999)
         result_tensor =result_tensor/math.sqrt(dk)
         
         result_tensor = torch.nn.functional.softmax(result_tensor,dim=-1)
+        #[BS,seq_len, seq_len]
+        # The sum of the softmax scores in the third dimension sum to 1
         result_tensor = torch.matmul(result_tensor,Value)
 
         result_list.append(result_tensor)
 
     concatenated_tensor = torch.cat(result_list, dim=0)
+    #[number of heads, BS,seq_len, seq_len]
 
     return concatenated_tensor
 
@@ -139,6 +144,7 @@ class BertLayer(nn.Module):
     # Introduce non-linearity with dense_layer
     transformed_norm_output = dense_layer(dropout_norm_output)
     
+    
     return transformed_norm_output
 
 
@@ -153,7 +159,18 @@ class BertLayer(nn.Module):
     4. a add-norm that takes the input and output of the feed forward layer
     """
     ### TODO
-    raise NotImplementedError
+    self_attention_output = self.self_attention.forward(hidden_states,attention_mask)
+    normalized_attention_layer = self.add_norm(input=hidden_states, output=self_attention_output , 
+                  dense_layer= self.attention_dense, dropout=self.attention_dropout, ln_layer= self.attention_layer_norm)
+    
+    ffn = self.interm_dense(normalized_attention_layer)
+    ffn = self.interm_af(ffn)
+    normalized_output_layer = self.add_norm(input=normalized_attention_layer, output=ffn, 
+                  dense_layer= self.out_dense, dropout=self.out_dropout, ln_layer= self.out_layer_norm)
+    
+
+    raise normalized_output_layer
+
 
 
 
