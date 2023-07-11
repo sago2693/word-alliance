@@ -210,12 +210,15 @@ class BertModel(BertPreTrainedModel):
     seq_length = input_shape[1]
 
     # Get word embedding from self.word_embedding into input_embeds.
-    inputs_embeds = None
+    inputs_embeds = self.word_embedding(input_ids)
     ### TODO
     raise NotImplementedError
 
 
     # Get position index and position embedding from self.pos_embedding into pos_embeds.
+    self.pos_embedding(inputs_embeds)
+
+    
     pos_ids = self.position_ids[:, :seq_length]
 
     pos_embeds = None
