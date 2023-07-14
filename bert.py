@@ -53,6 +53,8 @@ class BertSelfAttention(nn.Module):
     value = torch.transpose(value,0,1)
     #Change to [num_attention_heads,bs seq_len, attention_head_size]
     key_transposed = torch.transpose(key,2,3)
+
+  
     #Change to [num_attention_heads,bs, attention_head_size, seq_len]
     query_head_list = torch.split(query, 1, dim=0)
     key_transposed_head_list = torch.split(key_transposed, 1, dim=0)
@@ -60,7 +62,7 @@ class BertSelfAttention(nn.Module):
 
     dk = key.shape[3]
     seq_len = key.shape[2]
-    repeated_attention_mask = attention_mask.repeat(seq_len,1,1).transpose(0,1) #This is causing an error. Probably from class Bert the extended attention already adjusts shape
+    #repeated_attention_mask = attention_mask.repeat(seq_len,1,1).transpose(0,1) #This is causing an error. Probably from class Bert the extended attention already adjusts shape
     # Initialize an empty list to store the result
     result_list = []
 
@@ -70,7 +72,8 @@ class BertSelfAttention(nn.Module):
         result_tensor = torch.matmul(Query, Key)
         # result tensor size [BS,seq_len, seq_len]
         # attention_mask [BS, seq_len]
-        result_tensor = result_tensor.masked_fill(repeated_attention_mask==0,-99999999999)
+        
+        result_tensor = result_tensor.masked_fill(attention_mask==0,-99999999999)
         result_tensor =result_tensor/math.sqrt(dk)
         
         result_tensor = torch.nn.functional.softmax(result_tensor,dim=-1)
@@ -82,7 +85,7 @@ class BertSelfAttention(nn.Module):
 
     concatenated_tensor = torch.cat(result_list, dim=0)
     #[number of heads, BS,seq_len, seq_len]
-
+    print('concatenated tensor shape', concatenated_tensor.shape)
     return concatenated_tensor
 
 
@@ -133,6 +136,8 @@ class BertLayer(nn.Module):
     # Each sub-layer in each encoder has a residual connection around it leading to layer-normalisation
     
     # Need to combine input and output
+    print('input shape',input.shape)
+    print('output shape',output.shape)
     residual = input + output
     
     # Apply normalisation
@@ -160,6 +165,7 @@ class BertLayer(nn.Module):
     """
     ### TODO
     self_attention_output = self.self_attention.forward(hidden_states,attention_mask)
+
     normalized_attention_layer = self.add_norm(input=hidden_states, output=self_attention_output , 
                   dense_layer= self.attention_dense, dropout=self.attention_dropout, ln_layer= self.attention_layer_norm)
     
