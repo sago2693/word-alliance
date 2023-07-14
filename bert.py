@@ -60,7 +60,7 @@ class BertSelfAttention(nn.Module):
 
     dk = key.shape[3]
     seq_len = key.shape[2]
-    repeated_attention_mask = attention_mask.repeat(seq_len,1,1).transpose(0,1)
+    repeated_attention_mask = attention_mask.repeat(seq_len,1,1).transpose(0,1) #This is causing an error. Probably from class Bert the extended attention already adjusts shape
     # Initialize an empty list to store the result
     result_list = []
 
@@ -210,17 +210,12 @@ class BertModel(BertPreTrainedModel):
     seq_length = input_shape[1]
 
     # Get word embedding from self.word_embedding into input_embeds.
-    inputs_embeds = None
-    ### TODO
-    raise NotImplementedError
-
+    inputs_embeds = self.word_embedding(input_ids)
 
     # Get position index and position embedding from self.pos_embedding into pos_embeds.
-    pos_ids = self.position_ids[:, :seq_length]
+    pos_ids = self.position_ids[:, :seq_length] #subsets a list of positions 0:512 to 0:seq_length. 
 
-    pos_embeds = None
-    ### TODO
-    raise NotImplementedError
+    pos_embeds = self.pos_embedding(pos_ids)
 
 
     # Get token type ids, since we are not consider token type, just a placeholder.
@@ -228,8 +223,11 @@ class BertModel(BertPreTrainedModel):
     tk_type_embeds = self.tk_type_embedding(tk_type_ids)
 
     # Add three embeddings together; then apply embed_layer_norm and dropout and return.
-    ### TODO
-    raise NotImplementedError
+    hidden_states = inputs_embeds+pos_embeds+tk_type_embeds
+    hidden_states = self.embed_layer_norm(hidden_states)
+    hidden_states = self.embed_dropout(hidden_states)
+
+    return hidden_states
 
 
   def encode(self, hidden_states, attention_mask):
