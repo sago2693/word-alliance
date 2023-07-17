@@ -45,48 +45,26 @@ class BertSelfAttention(nn.Module):
     # normalize the scores
     # multiply the attention scores to the value and get back V'
     # next, we need to concat multi-heads and recover the original shape [bs, seq_len, num_attention_heads * attention_head_size = hidden_size]
-
     ### TODO
     #Initial dimensions: [bs, num_attention_heads, seq_len, attention_head_size]
-    key = torch.transpose(key,0,1)
-    query = torch.transpose(query,0,1)
-    value = torch.transpose(value,0,1)
-    #Change to [num_attention_heads,bs seq_len, attention_head_size]
-    key_transposed = torch.transpose(key,2,3)
-
-  
-    #Change to [num_attention_heads,bs, attention_head_size, seq_len]
-    query_head_list = torch.split(query, 1, dim=0)
-    key_transposed_head_list = torch.split(key_transposed, 1, dim=0)
-    value_head_list = torch.split(value, 1, dim=0)
-
     dk = key.shape[3]
-    seq_len = key.shape[2]
-    #repeated_attention_mask = attention_mask.repeat(seq_len,1,1).transpose(0,1) #This is causing an error. Probably from class Bert the extended attention already adjusts shape
-    # Initialize an empty list to store the result
-    result_list = []
 
-    # Perform matrix multiplication for each pair of tensors
-    for Query, Key, Value in zip(query_head_list, key_transposed_head_list, value_head_list):
-       
-        result_tensor = torch.matmul(Query, Key)
-        # result tensor size [BS,seq_len, seq_len]
-        # attention_mask [BS, seq_len]
-        
-        result_tensor = result_tensor.masked_fill(attention_mask==0,-99999999999)
-        result_tensor =result_tensor/math.sqrt(dk)
-        
-        result_tensor = torch.nn.functional.softmax(result_tensor,dim=-1)
-        #[BS,seq_len, seq_len]
-        # The sum of the softmax scores in the third dimension sum to 1
-        result_tensor = torch.matmul(result_tensor,Value)
+    key_transposed = torch.transpose(key,2,3)
+    #Change to [bs,num_attention_heads, attention_head_size, seq_len]
+    result_tensor = torch.matmul(query, key_transposed)
+    result_tensor = result_tensor.masked_fill(attention_mask==0,-99999999999)
+    result_tensor =result_tensor/math.sqrt(dk)
+    result_tensor = torch.nn.functional.softmax(result_tensor,dim=-1) #Apply softmax
+    result_tensor = torch.matmul(result_tensor,value)
 
-        result_list.append(result_tensor)
+    result_tensor = result_tensor.transpose(1,2)
 
-    concatenated_tensor = torch.cat(result_list, dim=0)
+    bs, seq_len = result_tensor.shape[:2]
+    result_tensor = torch.reshape(result_tensor,(bs,seq_len,self.all_head_size))
+    
+
     #[number of heads, BS,seq_len, seq_len]
-    print('concatenated tensor shape', concatenated_tensor.shape)
-    return concatenated_tensor
+    return result_tensor
 
 
   def forward(self, hidden_states, attention_mask):
@@ -136,10 +114,10 @@ class BertLayer(nn.Module):
     # Each sub-layer in each encoder has a residual connection around it leading to layer-normalisation
     
     # Need to combine input and output
-    print('input shape',input.shape)
-    print('output shape',output.shape)
-    residual = input + output
-    
+    dense_output = dense_layer(output)
+    residual = input + dense_output
+
+
     # Apply normalisation
     norm_output = ln_layer(residual)
     
@@ -147,10 +125,8 @@ class BertLayer(nn.Module):
     dropout_norm_output = dropout(norm_output)
     
     # Introduce non-linearity with dense_layer
-    transformed_norm_output = dense_layer(dropout_norm_output)
     
-    
-    return transformed_norm_output
+    return dropout_norm_output
 
 
   def forward(self, hidden_states, attention_mask):
@@ -170,12 +146,13 @@ class BertLayer(nn.Module):
                   dense_layer= self.attention_dense, dropout=self.attention_dropout, ln_layer= self.attention_layer_norm)
     
     ffn = self.interm_dense(normalized_attention_layer)
-    ffn = self.interm_af(ffn)
+    ffn = self.interm_af(ffn) # Activation. After this we get 4th dimension of size 3072
+   
     normalized_output_layer = self.add_norm(input=normalized_attention_layer, output=ffn, 
                   dense_layer= self.out_dense, dropout=self.out_dropout, ln_layer= self.out_layer_norm)
     
-
-    raise normalized_output_layer
+    print('normalized_score_layer shape',normalized_output_layer.shape)
+    return normalized_output_layer
 
 
 

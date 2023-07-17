@@ -6,6 +6,7 @@ from torch.optim import Optimizer
 
 
 class AdamW(Optimizer):
+        
     def __init__(
             self,
             params: Iterable[torch.nn.parameter.Parameter],
@@ -30,36 +31,41 @@ class AdamW(Optimizer):
         loss = None
         if closure is not None:
             loss = closure()
+        
 
         for group in self.param_groups:
-            for p in group["params"]:
+            for p in group['params']:
                 if p.grad is None:
                     continue
                 grad = p.grad.data
-                if grad.is_sparse:
-                    raise RuntimeError("Adam does not support sparse gradients, please consider SparseAdam instead")
-
-                # State should be stored in this dictionary
+    
                 state = self.state[p]
-
-                # Access hyperparameters from the `group` dictionary
-                alpha = group["lr"]
-
-                # Complete the implementation of AdamW here, reading and saving
-                # your state in the `state` dictionary above.
-                # The hyperparameters can be read from the `group` dictionary
-                # (they are lr, betas, eps, weight_decay, as saved in the constructor).
-                #
-                # 1- Update first and second moments of the gradients
-                # 2- Apply bias correction
-                #    (using the "efficient version" given in https://arxiv.org/abs/1412.6980;
-                #     also given in the pseudo-code in the project description).
-                # 3- Update parameters (p.data).
-                # 4- After that main gradient-based update, update again using weight decay
-                #    (incorporating the learning rate again).
-
-                ### TODO
-                raise NotImplementedError
-
-
+                if len(state) == 0:
+                    state['step'] = 0
+                    state['first_moment'] = torch.zeros_like(p.data)
+                    state['second_moment'] = torch.zeros_like(p.data)
+                
+                #Update step
+                state['step'] += 1
+    
+                # Update first and second moments of the gradients
+                state['first_moment'] = group['betas'][0]*state['first_moment'] + (1-group['betas'][0])*grad
+                state['second_moment'] = group['betas'][1]*state['second_moment'] + (1-group['betas'][1])*grad**2
+                
+                bias_correction1 = 1 - group['betas'][0] ** state['step']
+                bias_correction2 = 1 - group['betas'][1] ** state['step']
+    
+                # # Apply bias correction
+                # bias_corrected_first_moment = state['first_moment'] / bias_correction1
+                # bias_corrected_second_moment = state['second_moment'] / bias_correction2    
+    
+                # Update parameters
+                step_size = group['lr'] * (bias_correction2)**0.5 / bias_correction1
+                update = state["first_moment"] / (torch.sqrt(state["second_moment"]) + group['eps'])
+                p.data = p.data -step_size * update
+    
+                # Update again using weight decay
+                if group['weight_decay'] != 0:
+                    p.data = p.data * (1 - group['lr'] * group['weight_decay'])
+        
         return loss
