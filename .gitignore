@@ -1,3 +1,6 @@
+#SSt classifier, because it is too big
+/sst-classifier.pt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

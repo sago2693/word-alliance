@@ -52,9 +52,10 @@ class BertSelfAttention(nn.Module):
     key_transposed = torch.transpose(key,2,3)
     #Change to [bs,num_attention_heads, attention_head_size, seq_len]
     result_tensor = torch.matmul(query, key_transposed)
-    result_tensor = result_tensor.masked_fill(attention_mask==0,-99999999999)
-    result_tensor =result_tensor/math.sqrt(dk)
+    result_tensor = result_tensor + attention_mask
+    result_tensor = result_tensor/math.sqrt(dk)
     result_tensor = torch.nn.functional.softmax(result_tensor,dim=-1) #Apply softmax
+    result_tensor = self.dropout(result_tensor)
     result_tensor = torch.matmul(result_tensor,value)
 
     result_tensor = result_tensor.transpose(1,2)
@@ -115,17 +116,10 @@ class BertLayer(nn.Module):
     
     # Need to combine input and output
     dense_output = dense_layer(output)
-    residual = input + dense_output
-
-
     # Apply normalisation
-    norm_output = ln_layer(residual)
-    
-    # I am not sure if dropout is best applied at this part of the code but dropout adds regularisation
-    dropout_norm_output = dropout(norm_output)
-    
-    # Introduce non-linearity with dense_layer
-    
+    norm_output = dropout(dense_output)
+    dropout_norm_output = ln_layer(norm_output + input)
+
     return dropout_norm_output
 
 
@@ -151,7 +145,7 @@ class BertLayer(nn.Module):
     normalized_output_layer = self.add_norm(input=normalized_attention_layer, output=ffn, 
                   dense_layer= self.out_dense, dropout=self.out_dropout, ln_layer= self.out_layer_norm)
     
-    print('normalized_score_layer shape',normalized_output_layer.shape)
+    
     return normalized_output_layer
 
 

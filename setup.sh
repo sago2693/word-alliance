@@ -10,7 +10,6 @@ else
     source activate dnlp
 fi
 
-conda create -n dnlp python=3.8
 conda activate dnlp
 conda install -c conda-forge jupyterlab
 conda install pytorch==1.8.0 torchvision torchaudio cudatoolkit=10.1 -c pytorch
