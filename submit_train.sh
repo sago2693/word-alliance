@@ -42,9 +42,9 @@ nvcc -V
 
 # Run the script:
 #Pretrain setting
-python -u classifier.py --option pretrain --use_gpu
+#python -u classifier.py --option pretrain --use_gpu
 #finetune setting
 #python -u classifier.py --option finetune --use_gpu --epochs 30 --batch_size 128 --lr 1e-5
-
+python -u classifier.py --option finetune --lr 1e-5 --batch_size 64 --use_gpu --local_files_only
 # Run the script with logger:
 #python -u train_with_logger.py -l ~/${SLURM_JOB_NAME}_${SLURM_JOB_ID}  -t True -p True -d True -s True -f True
