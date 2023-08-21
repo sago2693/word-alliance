@@ -52,7 +52,10 @@ class MultitaskBERT(nn.Module):
             elif config.option == 'finetune':
                 param.requires_grad = True
         ### TODO
-        raise NotImplementedError
+        self.drop = torch.nn.Dropout(p=0.3)
+        self.sst_classifier = torch.nn.Linear(self.bert.config.hidden_size, self.num_labels_sst)
+        self.para_classifier = torch.nn.Linear(self.bert.config.hidden_size, self.num_labels_para)
+        self.sts_classifier = torch.nn.Linear(self.bert.config.hidden_size, self.num_labels_sts)
 
 
     def forward(self, input_ids, attention_mask):
@@ -61,8 +64,11 @@ class MultitaskBERT(nn.Module):
         # Here, you can start by just returning the embeddings straight from BERT.
         # When thinking of improvements, you can later try modifying this
         # (e.g., by adding other layers).
-        ### TODO
-        raise NotImplementedError
+        bert_out = self.bert(input_ids, attention_mask) 
+        dropped = self.drop(bert_out['pooler_output'])
+        out = self.linear(dropped)
+        sentence_embeddings = out.last_hidden_state[:, 0, :]
+        return sentence_embeddings
 
 
     def predict_sentiment(self, input_ids, attention_mask):
@@ -143,12 +149,12 @@ def train_multitask(args):
     
     #sts
     sts_train_data = SentencePairDataset(sts_train_data, args, isRegression =True)
-    sts_dev_data = SentencePairDataset(sst_dev_data, args, isRegression =True)
+    sts_dev_data = SentencePairDataset(sts_dev_data, args, isRegression =True)
 
-    sts_train_dataloader = DataLoader(sst_train_data, shuffle=True, batch_size=256,
-                                    collate_fn=sst_train_data.collate_fn)
-    sts_dev_dataloader = DataLoader(sst_dev_data, shuffle=True, batch_size=256,
-                                collate_fn=sst_dev_data.collate_fn)
+    sts_train_dataloader = DataLoader(sts_train_data, shuffle=True, batch_size=256,
+                                    collate_fn=sts_train_data.collate_fn)
+    sts_dev_dataloader = DataLoader(sts_dev_data, shuffle=True, batch_size=256,
+                                collate_fn=sts_dev_data.collate_fn)
 
     # Init model
     config = {'hidden_dropout_prob': args.hidden_dropout_prob,
