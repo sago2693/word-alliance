@@ -53,9 +53,9 @@ class MultitaskBERT(nn.Module):
                 param.requires_grad = True
         ### TODO
         self.drop = torch.nn.Dropout(p=0.3)
-        self.sst_classifier = torch.nn.Linear(self.bert.config.hidden_size, self.num_labels_sst)
-        self.para_classifier = torch.nn.Linear(self.bert.config.hidden_size, self.num_labels_para)
-        self.sts_classifier = torch.nn.Linear(self.bert.config.hidden_size, self.num_labels_sts)
+        self.sst_classifier = torch.nn.Linear(self.bert.config.hidden_size, N_SENTIMENT_CLASSES)
+        self.para_classifier = torch.nn.Linear(self.bert.config.hidden_size, 1)
+        self.sts_classifier = torch.nn.Linear(self.bert.config.hidden_size, 1)
 
 
     def forward(self, input_ids, attention_mask):
