@@ -13,7 +13,7 @@ from tqdm import tqdm
 from datasets import SentenceClassificationDataset, SentencePairDataset, \
     load_multitask_data, load_multitask_test_data
 
-from evaluation import model_eval_sst, test_model_multitask, model_eval_multitask
+from evaluation import model_eval_sst, test_model_multitask, model_eval_multitask, compute_total_loss
 
 
 TQDM_DISABLE=True
@@ -178,7 +178,12 @@ def train_multitask(args):
         model.train()
         train_loss = 0
         num_batches = 0
+        sst_train_loss_list = []
+        paraphrase_train_loss_list = []
+        sts_train_loss_list = []
+        #TODO IMPLEMENT A SIMPLE SEQUENTIAL DATALOADER TO TEST
         for batch in tqdm(sst_train_dataloader, desc=f'train-{epoch}', disable=TQDM_DISABLE):
+            #TODO Here we have to separate tokens according to the task 
             b_ids, b_mask, b_labels = (batch['token_ids'],
                                        batch['attention_mask'], batch['labels'])
 
@@ -187,8 +192,37 @@ def train_multitask(args):
             b_labels = b_labels.to(device)
 
             optimizer.zero_grad()
-            logits = model.predict_sentiment(b_ids, b_mask)
-            loss = F.cross_entropy(logits, b_labels.view(-1), reduction='sum') / args.batch_size
+            #logit predictions
+            #TODO THESE COULD COME FROM THE METHOD model_eval_multitask.
+            # IN ORDER TO CALL THIS METHOD, WE HAVE TO CREATE A DATALOADER FOR EACH TASK
+            #THAT FOLLOWS THE TRAINING STRATEGY THAT WE DEVISE.
+            logits_sst = model.predict_sentiment(b_ids, b_mask)
+            logits_paraphrase = model.predict_paraphrase(b_ids, b_mask)
+            logits_sts = model.predict_similarity(b_ids, b_mask)
+
+            #Compute losses for each task
+            #TODO CHANGE B_LABELS TO THE BATCH FOR EACH TASK
+            #TODO CONTROL THAT IF THE BATCH DOES NOT HAVE DATA FOR THAT TASK, NO LOSS IS ADDED TO THE LIST
+
+            sst_loss = F.cross_entropy(logits_sst, b_labels.view(-1), reduction='mean')
+            #Complete paraphrase loss and sts loss. TODO. THESE VALUES HAVE TO BE ADJUSTED
+            bce_loss = nn.BCEWithLogitsLoss(reduction='mean')
+            paraphrase_loss=bce_loss(logits_paraphrase, b_labels.view(-1)) #Change these logits
+
+            # Apply sigmoid activation to logits
+            sigmoid = nn.Sigmoid()
+            probabilities = sigmoid(logits_sts) #maps logits to range 0 to 1
+            # Define the MSE loss function
+            mse_loss = nn.MSELoss(reduction='mean')
+            sts_loss = mse_loss(probabilities, b_labels.view(-1))
+
+            #Add losses to lists
+            sst_train_loss_list.append(sst_loss)
+            paraphrase_train_loss_list.append(paraphrase_loss)
+            sts_train_loss_list.append(sts_loss)
+            losses_list = [sst_train_loss_list,paraphrase_train_loss_list,sts_train_loss_list]
+            #Compute weighted loss
+            loss,variances = compute_total_loss(losses_list)
 
             loss.backward()
             optimizer.step()
@@ -197,7 +231,7 @@ def train_multitask(args):
             num_batches += 1
 
         train_loss = train_loss / (num_batches)
-
+        print(variances)
         train_acc, train_f1, *_ = model_eval_sst(sst_train_dataloader, model, device)
         dev_acc, dev_f1, *_ = model_eval_sst(sst_dev_dataloader, model, device)
 

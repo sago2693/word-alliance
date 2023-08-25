@@ -29,6 +29,15 @@ Parts of the code are from the [`transformers`](https://github.com/huggingface/t
 
 Parts of the scripts and code were altered by [Jan Philip Wahle](https://jpwahle.com/) and [Terry Ruas](https://terryruas.com/).
 
+
+## IMPORTANT NOTE FOR STS
+According to : https://www.sbert.net/examples/training/sts/README.html
+
+To train our network, we need to normalize these scores to a range of 0-1. This can simply be done by dividing the score by 5
+They also suggest a cosine similarity loss
+This article suggests solving STS in a different way:
+https://thepythoncode.com/article/finetune-bert-for-semantic-textual-similarity-in-python#models-architecture
+In fact, in the project's documentation the output of this task SEEMS TO BE in the range from 0 to 1
 ## Multi-task learning setup
 Mult-task learning is a hot research topic in which several features of the model and the training process are studied. Here he discuss briefly the following ones: ********************************Architecture, Loss Function and mini-batch configuration********************************
 
@@ -53,6 +62,13 @@ $$
 \lambda_{t} = \frac{1}{2\sigma_{t}^{2}}
 
 $$
+
+According to (Lauscher et al., 2018) the Loss function with that weighting equals:
+$$
+\text{Total loss} = \sum_{t} \frac{1}{2\sigma_{t}^{2}} L_{t} + \ln(\sigma_{t}^{2})
+
+$$
+
 Given the project's goal of havingthe best overall performance in the 3 tasks, we will use the dynamic weight assignment to ensure that the gradients are driven by the less noisy task to possibly have a slower but more stable learning.
 
 **************Mini-batches configuration:**************
@@ -64,5 +80,6 @@ The typical approach in curriculum learning for transfer learning tasks involves
 **************References:**************
 Chen, S., Zhang, Y., & Yang, Q. (2021). Multi-Task Learning in Natural Language Processing: An Overview. https://doi.org/10.48550/ARXIV.2109.09138
 Crawshaw, M. (2020). Multi-Task Learning with Deep Neural Networks: A Survey. https://doi.org/10.48550/ARXIV.2009.09796
+Lauscher, A., Glavaš, G., Ponzetto, S. P., & Eckert, K. (2018). Investigating the Role of Argumentation in the Rhetorical Analysis of Scientific Publications with Neural Multi-Task Learning Models. Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing, 3326–3338. https://doi.org/10.18653/v1/D18-1370
 Stickland, A. C., & Murray, I. (2019). BERT and PALs: Projected Attention Layers for Efficient Adaptation in Multi-Task Learning. https://doi.org/10.48550/ARXIV.1902.02671
 Worsham, J., & Kalita, J. (2020). Multi-task learning for natural language processing in the 2020s: Where are we going? Pattern Recognition Letters, 136, 120–126. https://doi.org/10.1016/j.patrec.2020.05.031
