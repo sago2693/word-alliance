@@ -301,3 +301,25 @@ def test_model_multitask(args, model, device):
             f.write(f"id \t Predicted_Similiary \n")
             for p, s in zip(test_sts_sent_ids, test_sts_y_pred):
                 f.write(f"{p} , {s} \n")
+
+
+###Evaluate loss function weighted by the variance 
+def compute_total_loss(loss_values):
+    total_loss = 0
+    variances = []
+    min_length = min(len(loss) for loss in loss_values)
+    
+    if min_length == 1:  # Check if the minimum length is 1. After there are more elements the weight changes
+        weight = 1 / len(loss_values)  # Equal weights
+        
+        for losses in loss_values:
+            total_loss += weight * losses[-1]
+        variances = [0] * len(loss_values)  # No variances when using equal weights
+        
+    else:
+        for losses in loss_values:
+            variance = torch.var(torch.tensor(losses)) 
+            variances.append(variance)
+            total_loss += (1 / (2 * variance)) * losses[-1] + torch.log(variance)
+    
+    return total_loss, variances
