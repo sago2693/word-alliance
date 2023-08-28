@@ -196,7 +196,8 @@ class BertModel(BertPreTrainedModel):
 
 
     # Get token type ids, since we are not consider token type, just a placeholder.
-    tk_type_ids = torch.zeros(input_shape, dtype=torch.long, device=input_ids.device)
+    #tk_type_ids = torch.zeros(input_shape, dtype=torch.long, device=input_ids.device)
+    tk_type_ids = create_attention_mask(input_ids)
     tk_type_embeds = self.tk_type_embedding(tk_type_ids)
 
     # Add three embeddings together; then apply embed_layer_norm and dropout and return.
