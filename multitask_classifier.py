@@ -287,7 +287,10 @@ def train_multitask(args):
                 mse_loss = nn.MSELoss(reduction='mean')
                 sts_loss = mse_loss(probabilities, b_labels.view(-1))
                 sts_train_loss_list.append(sts_loss)
-
+            
+            else:
+                raise ValueError("Invalid b_task_id value. Expected 0, 1, or 2.")
+            
             losses_list = [sst_train_loss_list,paraphrase_train_loss_list,sts_train_loss_list]
             #Compute weighted loss
             loss,variances = compute_total_loss(losses_list)
