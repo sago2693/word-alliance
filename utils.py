@@ -345,3 +345,33 @@ def get_extended_attention_mask(attention_mask: Tensor, dtype) -> Tensor:
   extended_attention_mask = extended_attention_mask.to(dtype=dtype)  # fp16 compatibility
   extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
   return extended_attention_mask
+
+
+#Concat sentences in one segment and create new attention mask
+def find_first_occurrence(tensor):
+    # Find the index of the first occurrence of value 102 (SEP token) for each row
+    first_occurrence_indices = []
+    for index, row in enumerate(tensor):
+        index = torch.nonzero(row == 102, as_tuple=False)
+        if len(index) > 0:
+            first_occurrence_indices.append(index[0, 0].item())
+        else:
+            print(index)
+            first_occurrence_indices.append(None)
+    return first_occurrence_indices
+
+def create_attention_mask(tensor):
+    # Get the first occurrence of 102 for each row in the tensor
+    first_occurrence_indices = find_first_occurrence(tensor)
+
+    # Create an attention mask tensor filled with ones
+    attention_mask = torch.ones_like(tensor)
+
+    # Set the values before the first occurrence of 102 to zeros
+    for i, idx in enumerate(first_occurrence_indices):
+        if idx is not None:
+            attention_mask[i, :idx + 1] = 0
+        else:
+            attention_mask[i] = 0
+
+    return attention_mask

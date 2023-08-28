@@ -79,8 +79,11 @@ class MultitaskBERT(nn.Module):
         (0 - negative, 1- somewhat negative, 2- neutral, 3- somewhat positive, 4- positive)
         Thus, your output should contain 5 logits for each sentence.
         '''
-        ### TODO
-        raise NotImplementedError
+        hidden_states = self.forward(input_ids, attention_mask)
+        # second dropout might be overkill causing over-regularization
+        # hidden_states = self.drop(hidden_states)
+        logits = self.sst_classifier(hidden_states[:, 0, :])
+        return logits
 
 
     def predict_paraphrase(self,
@@ -92,7 +95,11 @@ class MultitaskBERT(nn.Module):
         '''
 
         ### TODO
-        raise NotImplementedError
+        hidden_states_1 = self.forward(input_ids_1, attention_mask_1)
+        hidden_states_2 = self.forward(input_ids_2, attention_mask_2)
+        combined_hidden_states = torch.cat((hidden_states_1[:, 0 :], hidden_states_2[:, 0, :]), dim=-1)
+        logits = self.para_classifier(combined_hidden_states)
+        return logits
 
 
     def predict_similarity(self,
@@ -103,7 +110,14 @@ class MultitaskBERT(nn.Module):
         during evaluation, and handled as a logit by the appropriate loss function.
         '''
         ### TODO
-        raise NotImplementedError
+        hidden_states_1 = self.forward(input_ids_1, attention_mask_1)
+        hidden_states_2 = self.forward(input_ids_2, attention_mask_2)
+        # Absolute difference is more efficient and reduces dimensionality. Might not perform as well though.
+        # torch.abs(hidden_states_1[:, 0, :] - hidden_states_2[:, 0, :])
+        # logits = self.sts_classifier(combined_rep)
+        combined_hidden_states = torch.cat((hidden_states_1[:, 0 :], hidden_states_2[:, 0, :]), dim=-1)
+        logits = self.sts_classifier(combined_hidden_states)
+        return logits
 
 
 
@@ -122,8 +136,19 @@ def save_model(model, optimizer, args, config, filepath):
     torch.save(save_info, filepath)
     print(f"save the model to {filepath}")
 
+#Collate function dependent on current task
+class CustomCollateFn:
+    def __init__(self, collate_fns):
+        self.collate_fns = collate_fns
 
-## Currently only trains on sst dataset
+    def __call__(self, batch):
+        task_id,_= batch[0] #This tuple is defined in the MultiTaskDataset class
+        #This only works if a batch only contains data from one task
+        collate_fn = self.collate_fns[task_id]
+        actual_batch = [actual_batch for _, actual_batch in batch]
+        return collate_fn(actual_batch)
+
+
 def train_multitask(args):
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
     # Load data
@@ -168,18 +193,6 @@ def train_multitask(args):
 
     multi_task_train_dataset = MultiTaskDataset(train_datasets)
 
-    class CustomCollateFn:
-        def __init__(self, collate_fns):
-            self.collate_fns = collate_fns
-
-        def __call__(self, batch):
-            task_id,_= batch[0] #This tuple is defined in the MultiTaskDataset class
-            #This only works if a batch only contains data from one task
-            collate_fn = self.collate_fns[task_id]
-            actual_batch = [actual_batch for task_id, actual_batch in batch]
-            return collate_fn(actual_batch)
-
-    # Assuming you have collate functions for each task
     collate_fns = {
         0: sst_train_data.collate_fn,
         1: paraphrase_train_data.collate_fn,
@@ -187,6 +200,7 @@ def train_multitask(args):
     }
 
     # Creating the custom collate function using the dictionary of collate functions
+    # Linked to each task id
     custom_collate_fn = CustomCollateFn(collate_fns)
 
     multi_task_train_data = DataLoader(
@@ -210,7 +224,9 @@ def train_multitask(args):
 
     lr = args.lr
     optimizer = AdamW(model.parameters(), lr=lr)
-    best_dev_acc = 0
+    best_dev_acc_sst = 0
+    best_dev_acc_paraphrase = 0
+    best_dev_corr_sts = 0
 
     # Run for the specified number of epochs
     for epoch in range(args.epochs):
@@ -225,66 +241,66 @@ def train_multitask(args):
             #TODO Here we have to separate tokens according to the task.
             #TODO I will have to return the dataset_id in the collate method to 
             #get it from the same dataloader. Once with the dataset_id I can choose which method and loss to use
-            b_ids, b_mask, b_labels = (batch['token_ids'],
-                                       batch['attention_mask'], batch['labels'])
 
-            b_ids = b_ids.to(device)
-            b_mask = b_mask.to(device)
-            b_labels = b_labels.to(device)
+            b_task_id = batch['task_id']
 
+            #Batch loading, prediction and loss depending on task:
             optimizer.zero_grad()
-            #logit predictions
-            #TODO THESE COULD COME FROM THE METHOD model_eval_multitask.
-            # IN ORDER TO CALL THIS METHOD, WE HAVE TO CREATE A DATALOADER FOR EACH TASK
-            #THAT FOLLOWS THE TRAINING STRATEGY THAT WE DEVISE.
-            logits_sst = model.predict_sentiment(b_ids, b_mask)
-            logits_paraphrase = model.predict_paraphrase(b_ids, b_mask)
-            logits_sts = model.predict_similarity(b_ids, b_mask)
 
-            #Compute losses for each task
-            #TODO CHANGE B_LABELS TO THE BATCH FOR EACH TASK
-            #TODO CONTROL THAT IF THE BATCH DOES NOT HAVE DATA FOR THAT TASK, NO LOSS IS ADDED TO THE LIST
+            if b_task_id==0: #Sentiment analysis
+                
+                b_ids, b_mask, b_labels = (batch['token_ids'],
+                                        batch['attention_mask'], batch['labels'])
 
-            sst_loss = F.cross_entropy(logits_sst, b_labels.view(-1), reduction='mean')
-            #Complete paraphrase loss and sts loss. TODO. THESE VALUES HAVE TO BE ADJUSTED
-            bce_loss = nn.BCEWithLogitsLoss(reduction='mean')
-            paraphrase_loss=bce_loss(logits_paraphrase, b_labels.view(-1)) #Change these logits
+                b_ids = b_ids.to(device)
+                b_mask = b_mask.to(device)
+                b_labels = b_labels.to(device)
+                logits_sst = model.predict_sentiment(b_ids, b_mask)
+                sst_loss = F.cross_entropy(logits_sst, b_labels.view(-1), reduction='mean')
+                sst_train_loss_list.append(sst_loss)
 
-            # Apply sigmoid activation to logits
-            sigmoid = nn.Sigmoid()
-            probabilities = sigmoid(logits_sts) #maps logits to range 0 to 1
-            # Define the MSE loss function
-            mse_loss = nn.MSELoss(reduction='mean')
-            sts_loss = mse_loss(probabilities, b_labels.view(-1))
+            elif b_task_id==1: #Paraphrasing
 
-            #Add losses to lists
-            sst_train_loss_list.append(sst_loss)
-            paraphrase_train_loss_list.append(paraphrase_loss)
-            sts_train_loss_list.append(sts_loss)
+                b_ids_1, b_mask_1,b_ids_2,b_mask_2, b_labels = (batch['token_ids_1'],
+                        batch['attention_mask_1'], batch['token_ids_2'],
+                        batch['attention_mask_2'], batch['labels'])
+                
+                logits_paraphrase = model.predict_paraphrase(b_ids_1,
+                            b_mask_1,
+                           b_ids_2, 
+                           b_mask_2)
+                #TODO. THESE VALUES must be checked
+                bce_loss = nn.BCEWithLogitsLoss(reduction='mean')
+                paraphrase_loss=bce_loss(logits_paraphrase, b_labels.view(-1)) #Change these logits
+                paraphrase_train_loss_list.append(paraphrase_loss)
+
+            elif b_task_id==2: # Text similarity
+                logits_sts = model.predict_similarity(b_ids, b_mask)
+                
+                #Complete paraphrase loss and sts loss. 
+
+                #TODO. THESE VALUES must be checked
+                # Apply sigmoid activation to logits
+                sigmoid = nn.Sigmoid()
+                probabilities = sigmoid(logits_sts) #maps logits to range 0 to 1
+                # Define the MSE loss function
+                mse_loss = nn.MSELoss(reduction='mean')
+                sts_loss = mse_loss(probabilities, b_labels.view(-1))
+                sts_train_loss_list.append(sts_loss)
+
             losses_list = [sst_train_loss_list,paraphrase_train_loss_list,sts_train_loss_list]
             #Compute weighted loss
             loss,variances = compute_total_loss(losses_list)
-
+            print("list of performance variance by training",variances)
             loss.backward()
             optimizer.step()
 
             train_loss += loss.item()
             num_batches += 1
 
-        train_loss = train_loss / (num_batches)
-        print(variances)
-        train_acc, train_f1, *_ = model_eval_sst(sst_train_dataloader, model, device)
-        dev_acc, dev_f1, *_ = model_eval_sst(sst_dev_dataloader, model, device)
+            #End of training batches
 
-
-        ## Adding multitask evaluation
-        #train
-        (train_paraphrase_accuracy, train_para_y_pred, train_para_sent_ids,
-         train_sentiment_accuracy,train_sst_y_pred, train_sst_sent_ids,
-           train_sts_corr, train_sts_y_pred, train_sts_sent_ids) = model_eval_multitask(sst_train_dataloader,
-                                                                      paraphrase_train_dataloader,sts_train_dataloader,model, model.device  )
-        
-        #dev
+        #Start dev evaluation 
         (dev_paraphrase_accuracy, dev_para_y_pred, dev_para_sent_ids,
          dev_sentiment_accuracy,dev_sst_y_pred, dev_sst_sent_ids,
            dev_sts_corr, dev_sts_y_pred, dev__sent_ids) = model_eval_multitask(sst_dev_dataloader,
@@ -292,11 +308,16 @@ def train_multitask(args):
         
         #We have to weight or average the three sores to save the best model.
         # In the diven code only sst is used
-        if dev_acc > best_dev_acc:
-            best_dev_acc = dev_acc
+
+
+        if dev_sentiment_accuracy > best_dev_acc_sst and dev_paraphrase_accuracy >best_dev_acc_paraphrase and dev_sts_corr>best_dev_corr_sts:
+            best_dev_acc_sst = dev_sentiment_accuracy
+            best_dev_acc_paraphrase = dev_paraphrase_accuracy
+            best_dev_corr_sts = dev_sts_corr
             save_model(model, optimizer, args, config, args.filepath)
 
-        print(f"Epoch {epoch}: train loss :: {train_loss :.3f}, train acc :: {train_acc :.3f}, dev acc :: {dev_acc :.3f}")
+        print(f"Epoch {epoch}: train loss :: {train_loss :.3f}, dev sentiment acc :: {dev_paraphrase_accuracy :.3f}, dev sentiment acc :: {dev_paraphrase_accuracy :.3f}, dev sts corr :: {best_dev_corr_sts :.3f}")
+        #Add train metrics to this print
 
 
 

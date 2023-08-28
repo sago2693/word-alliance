@@ -57,6 +57,7 @@ class SentenceClassificationDataset(Dataset):
         token_ids, attention_mask, labels, sents, sent_ids= self.pad_data(all_data)
 
         batched_data = {
+                'task_id': self.get_task_id(),
                 'token_ids': token_ids,
                 'attention_mask': attention_mask,
                 'labels': labels,
@@ -97,6 +98,7 @@ class SentenceClassificationTestDataset(Dataset):
         token_ids, attention_mask, sents, sent_ids= self.pad_data(all_data)
 
         batched_data = {
+                'task_id': self.get_task_id(),
                 'token_ids': token_ids,
                 'attention_mask': attention_mask,
                 'sents': sents,
@@ -155,6 +157,7 @@ class SentencePairDataset(Dataset):
          labels, sent_ids) = self.pad_data(all_data)
 
         batched_data = {
+                'task_id': self.get_task_id(),
                 'token_ids_1': token_ids,
                 'token_type_ids_1': token_type_ids,
                 'attention_mask_1': attention_mask,
@@ -214,6 +217,7 @@ class SentencePairTestDataset(Dataset):
          sent_ids) = self.pad_data(all_data)
 
         batched_data = {
+                'task_id': self.get_task_id(),
                 'token_ids_1': token_ids,
                 'token_type_ids_1': token_type_ids,
                 'attention_mask_1': attention_mask,
