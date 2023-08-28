@@ -75,7 +75,17 @@ Given the project's goal of havingthe best overall performance in the 3 tasks, w
 
 The typical approach in curriculum learning for transfer learning tasks involves constructing mini-batches that comprise examples specific to an individual task. Subsequently, during training, there is an alternating progression between these tasks. (Worsham and Kalita, 2020, p. 6) 
 
-““(Stickland and Murray, 2019) propose a technique called annealed sampling in which batch sampling is originally based on the ratio of dataset sizes and slowly anneals to an even distribution across all tasks as the current epoch number increases. These discoveries, when combined with curriculum research emerging from the field of reinforcement learning” (Worsham and Kalita, 2020, p. 6) (pdf) Giventhe considerable difference of sizes between the paraphrase identification dataset and the other two (140.000 vs around 7000), We will use this technique to aim for a balanced distibution of samples at the end of the training.
+““(Stickland and Murray, 2019) propose a technique called annealed sampling in which batch sampling is originally based on the ratio of dataset sizes and slowly anneals to an even distribution across all tasks as the current epoch number increases. These discoveries, when combined with curriculum research emerging from the field of reinforcement learning” (Worsham and Kalita, 2020, p. 6) (pdf). The formula of the annealed sampling introduces a factor alpha to which the dataset size must be raised:
+$$
+\P_i \propto N_i^\alpha
+$$
+$$
+\text{Where}
+$$
+$$
+\alpha = 1 - 0.8 \left( \frac{e - 1}{E - 1} \right)
+$$
+ Giventhe considerable difference of sizes between the paraphrase identification dataset and the other two (140.000 vs around 7000), We will use this technique to aim for a balanced distibution of samples at the end of the training.
 
 **************References:**************
 Chen, S., Zhang, Y., & Yang, Q. (2021). Multi-Task Learning in Natural Language Processing: An Overview. https://doi.org/10.48550/ARXIV.2109.09138
