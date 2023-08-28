@@ -29,12 +29,16 @@ class SentenceClassificationDataset(Dataset):
         self.dataset = dataset
         self.p = args
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', local_files_only=args.local_files_only)
+        self.task_id = 0
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         return self.dataset[idx]
+    
+    def get_task_id(self):
+        return self.task_id
 
     def pad_data(self, data):
 
@@ -68,12 +72,16 @@ class SentenceClassificationTestDataset(Dataset):
         self.dataset = dataset
         self.p = args
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', local_files_only=args.local_files_only)
+        self.task_id = 0
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         return self.dataset[idx]
+    
+    def get_task_id(self):
+        return self.task_id
 
     def pad_data(self, data):
         sents = [x[0] for x in data]
@@ -103,6 +111,7 @@ class SentencePairDataset(Dataset):
         self.dataset = dataset
         self.p = args
         self.isRegression = isRegression
+        self.task_id = 2 if isRegression else 1
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', local_files_only=args.local_files_only)
 
     def __len__(self):
@@ -110,7 +119,10 @@ class SentencePairDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.dataset[idx]
-
+    
+    def get_task_id(self):
+        return self.task_id
+    
     def pad_data(self, data):
         sent1 = [x[0] for x in data]
         sent2 = [x[1] for x in data]
@@ -157,16 +169,23 @@ class SentencePairDataset(Dataset):
 
 
 class SentencePairTestDataset(Dataset):
-    def __init__(self, dataset, args):
+    def __init__(self, dataset, args, isRegression =False):
         self.dataset = dataset
         self.p = args
+        self.isRegression = isRegression #Added parameter although is not used in the test set for  its original purpose
+        #But just to use the get_task_id method like in the other class
+        self.task_id = 2 if isRegression else 1
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', local_files_only=args.local_files_only)
+        
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         return self.dataset[idx]
+    
+    def get_task_id(self):
+        return self.task_id
 
     def pad_data(self, data):
         sent1 = [x[0] for x in data]

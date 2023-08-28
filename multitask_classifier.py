@@ -7,8 +7,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
 from bert import BertModel
+from data_loader import MultiTaskBatchSampler,MultiTaskDataset
 from optimizer import AdamW
 from tqdm import tqdm
+
 
 from datasets import SentenceClassificationDataset, SentencePairDataset, \
     load_multitask_data, load_multitask_test_data
@@ -127,14 +129,12 @@ def train_multitask(args):
     # Load data
     # Create the data and its corresponding datasets and dataloader
     sst_train_data, num_labels,para_train_data, sts_train_data = load_multitask_data(args.sst_train,args.para_train,args.sts_train, split ='train')
-    sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train')
+    sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train') #Itis correct to use this slit for dev. The other option is test which does not load the labels
     
     #Sentiment analysis
     sst_train_data = SentenceClassificationDataset(sst_train_data, args)
     sst_dev_data = SentenceClassificationDataset(sst_dev_data, args)
 
-    sst_train_dataloader = DataLoader(sst_train_data, shuffle=True, batch_size=args.batch_size,
-                                      collate_fn=sst_train_data.collate_fn)
     sst_dev_dataloader = DataLoader(sst_dev_data, shuffle=False, batch_size=args.batch_size,
                                     collate_fn=sst_dev_data.collate_fn)
     
@@ -142,19 +142,58 @@ def train_multitask(args):
     paraphrase_train_data = SentencePairDataset(para_train_data, args, isRegression =False)
     paraphrase_dev_data = SentencePairDataset(para_dev_data, args, isRegression =False)
 
-    paraphrase_train_dataloader = DataLoader(paraphrase_train_data, shuffle=True, batch_size=args.batch_size,
-                                    collate_fn=paraphrase_train_data.collate_fn)
-    paraphrase_dev_dataloader = DataLoader(paraphrase_dev_data, shuffle=True, batch_size=args.batch_size,
+    paraphrase_dev_dataloader = DataLoader(paraphrase_dev_data, shuffle=False, batch_size=args.batch_size,
                                     collate_fn=paraphrase_dev_data.collate_fn)
     
     #sts
     sts_train_data = SentencePairDataset(sts_train_data, args, isRegression =True)
     sts_dev_data = SentencePairDataset(sts_dev_data, args, isRegression =True)
 
-    sts_train_dataloader = DataLoader(sts_train_data, shuffle=True, batch_size=256,
-                                    collate_fn=sts_train_data.collate_fn)
-    sts_dev_dataloader = DataLoader(sts_dev_data, shuffle=True, batch_size=256,
+    sts_dev_dataloader = DataLoader(sts_dev_data, shuffle=False, batch_size=args.batch_size,
                                 collate_fn=sts_dev_data.collate_fn)
+    
+    #MTL data loader
+    train_datasets = [sst_train_data,paraphrase_train_data, sts_train_data]
+    #Temporarily initialized here but later in epoch loop to update current epoch and do annealed sampling
+    mtl_sampler = MultiTaskBatchSampler(        datasets=train_datasets,
+        current_epoch=1,
+        total_epochs=5,
+        batch_size = 128,
+        mix_opt=1,
+        extra_task_ratio=0,
+        bin_size=64,
+        bin_on=False,
+        bin_grow_ratio=0.5,
+        sampling='sequential')
+
+    multi_task_train_dataset = MultiTaskDataset(train_datasets)
+
+    class CustomCollateFn:
+        def __init__(self, collate_fns):
+            self.collate_fns = collate_fns
+
+        def __call__(self, batch):
+            task_id,_= batch[0] #This tuple is defined in the MultiTaskDataset class
+            #This only works if a batch only contains data from one task
+            collate_fn = self.collate_fns[task_id]
+            actual_batch = [actual_batch for task_id, actual_batch in batch]
+            return collate_fn(actual_batch)
+
+    # Assuming you have collate functions for each task
+    collate_fns = {
+        0: sst_train_data.collate_fn,
+        1: paraphrase_train_data.collate_fn,
+        2: sts_train_data.collate_fn
+    }
+
+    # Creating the custom collate function using the dictionary of collate functions
+    custom_collate_fn = CustomCollateFn(collate_fns)
+
+    multi_task_train_data = DataLoader(
+    multi_task_train_dataset,
+    batch_sampler=mtl_sampler,
+    collate_fn = custom_collate_fn
+    )
 
     # Init model
     config = {'hidden_dropout_prob': args.hidden_dropout_prob,
@@ -182,8 +221,10 @@ def train_multitask(args):
         paraphrase_train_loss_list = []
         sts_train_loss_list = []
         #TODO IMPLEMENT A SIMPLE SEQUENTIAL DATALOADER TO TEST
-        for batch in tqdm(sst_train_dataloader, desc=f'train-{epoch}', disable=TQDM_DISABLE):
-            #TODO Here we have to separate tokens according to the task 
+        for batch in tqdm(multi_task_train_data, desc=f'train-{epoch}', disable=TQDM_DISABLE):
+            #TODO Here we have to separate tokens according to the task.
+            #TODO I will have to return the dataset_id in the collate method to 
+            #get it from the same dataloader. Once with the dataset_id I can choose which method and loss to use
             b_ids, b_mask, b_labels = (batch['token_ids'],
                                        batch['attention_mask'], batch['labels'])
 
