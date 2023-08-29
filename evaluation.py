@@ -304,22 +304,15 @@ def test_model_multitask(args, model, device):
 
 
 ###Evaluate loss function weighted by the variance 
-def compute_total_loss(loss_values):
-    total_loss = 0
-    variances = []
+def compute_loss_weights(loss_values):
+    weights = []
     min_length = min(len(loss) for loss in loss_values)
-    
-    if min_length == 1:  # Check if the minimum length is 1. After there are more elements the weight changes
-        weight = 1 / len(loss_values)  # Equal weights
-        
-        for losses in loss_values:
-            total_loss += weight * losses[-1]
-        variances = [0] * len(loss_values)  # No variances when using equal weights
+   
+    if min_length <= 1:  # Check if the minimum length to compute variance
+        weights= [1 / len(loss_values)]*3
         
     else:
         for losses in loss_values:
-            variance = torch.var(torch.tensor(losses)) 
-            variances.append(variance)
-            total_loss += (1 / (2 * variance)) * losses[-1] + torch.log(variance)
+            weights.append(1/(2*(np.var(losses))))
     
-    return total_loss, variances
+    return  weights
