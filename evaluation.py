@@ -54,7 +54,8 @@ def model_eval_sst(dataloader, model, device):
         y_pred.extend(preds)
         sents.extend(b_sents)
         sent_ids.extend(b_sent_ids)
-        break
+        
+
 
     f1 = f1_score(y_true, y_pred, average='macro')
     acc = accuracy_score(y_true, y_pred)
@@ -62,14 +63,12 @@ def model_eval_sst(dataloader, model, device):
     return acc, f1, y_pred, y_true, sents, sent_ids
 
 # Perform model evaluation in terms by averaging accuracies across tasks.
-def model_eval_multitask(sentiment_dataloader,
-                         paraphrase_dataloader,
-                         sts_dataloader,
-                         model, device):
-    print("iam inside eval")
+def model_eval_multitask(sentiment_dataloader, \
+                         paraphrase_dataloader, \
+                         sts_dataloader, \
+                         model, device): 
+   
     model.eval()  # switch to eval model, will turn off randomness like dropout
-    print("iam inside eval 2 ")
-    print(device)
     with torch.no_grad():
         para_y_true = []
         para_y_pred = []
@@ -83,9 +82,7 @@ def model_eval_multitask(sentiment_dataloader,
             b_ids = b_ids.to(device)
             b_mask = b_mask.to(device)
             b_token_type_ids = b_token_type_ids.to(device)
-
-            logits = model.predict(input_ids=b_ids,attention_mask=b_mask,
-                      token_type_ids=b_token_type_ids,task_id= b_task_id)
+            logits = model.predict(input_ids=b_ids,attention_mask=b_mask,token_type_ids=b_token_type_ids,task_id= b_task_id)
 
             y_hat = logits.sigmoid().round().flatten().cpu().numpy()
             b_labels = b_labels.flatten().cpu().numpy()
@@ -93,7 +90,7 @@ def model_eval_multitask(sentiment_dataloader,
             para_y_pred.extend(y_hat)
             para_y_true.extend(b_labels)
             para_sent_ids.extend(b_sent_ids)
-            break
+           
 
         paraphrase_accuracy = np.mean(np.array(para_y_pred) == np.array(para_y_true))
 
@@ -120,7 +117,7 @@ def model_eval_multitask(sentiment_dataloader,
             sts_y_pred.extend(y_hat)
             sts_y_true.extend(b_labels)
             sts_sent_ids.extend(b_sent_ids)
-            break
+            
         pearson_mat = np.corrcoef(sts_y_pred,sts_y_true)
         sts_corr = pearson_mat[1][0]
 
@@ -147,7 +144,7 @@ def model_eval_multitask(sentiment_dataloader,
             sst_y_pred.extend(y_hat)
             sst_y_true.extend(b_labels)
             sst_sent_ids.extend(b_sent_ids)
-            break
+           
 
         sentiment_accuracy = np.mean(np.array(sst_y_pred) == np.array(sst_y_true))
 
