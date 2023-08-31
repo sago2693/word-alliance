@@ -8,7 +8,7 @@
 #SBATCH --ntasks=1                   # total number of tasks
 #SBATCH --cpus-per-task=4            # number cores per task
 #SBATCH --mail-type=all              # send mail when job begins and ends
-#SBATCH --mail-user=s.gonzalezorjuela@stud.uni-goettingen.de  # TODO: change this to your mailaddress!
+#SBATCH --mail-user=daniel.tranortega01@stud.uni-goettingen.de  # TODO: change this to your mailaddress!
 #SBATCH --output=./slurm_files/slurm-%x-%j.out     # where to write output, %x give job name, %j names job id
 #SBATCH --error=./slurm_files/slurm-%x-%j.err      # where to write slurm error
 
@@ -45,6 +45,6 @@ nvcc -V
 #python -u classifier.py --option pretrain --use_gpu
 #finetune setting
 #python -u classifier.py --option finetune --use_gpu --epochs 30 --batch_size 128 --lr 1e-5
-python -u classifier.py --option finetune --lr 1e-5 --batch_size 64 --use_gpu --local_files_only
+python -u multitask_classifier.py --option finetune --lr 1e-5 --batch_size 64 --use_gpu --local_files_only
 # Run the script with logger:
 #python -u train_with_logger.py -l ~/${SLURM_JOB_NAME}_${SLURM_JOB_ID}  -t True -p True -d True -s True -f True
