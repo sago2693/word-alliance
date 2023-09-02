@@ -1,7 +1,7 @@
 # It is better to copy the code here instead of importing to prevent the arg part from running
 import torch
 
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 import time, random, numpy as np, argparse
 import torch.nn.functional as F
 from tqdm import tqdm
@@ -90,7 +90,7 @@ class MultitaskBERT(nn.Module):
 
 def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weighted_avg,  dev_sentiment_accuracy, dev_paraphrase_accuracy, dev_sts_corr,loss):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    print(999999999999999999999)
+
     save_info = {
         'model': model.state_dict(),
         'optim': optimizer.state_dict(),
@@ -100,8 +100,6 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
         'numpy_rng': np.random.get_state(),
         'torch_rng': torch.random.get_rng_state(),
     }
-    model_number = 1
-    print(batch_size)
     # while os.path.exists(os.path.join(filepath, f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")):
         # model_number += 1
 
@@ -112,7 +110,6 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
     txt_filename = os.path.join("./Models_Meta_Data/", f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}-model_{model_number}.txt")
     # txt_filename = os.path.splitext(txt_path)[0] + ".txt"
     with open(txt_filename, 'w') as txt_file:
-        txt_file.write(f"Model {model_number} information:\n")
         txt_file.write(f"weighted_avg: {weighted_avg}\n")
         txt_file.write(f"dev_sentiment_accuracy: {dev_sentiment_accuracy}\n")
         txt_file.write(f"dev_paraphrase_accuracy: {dev_paraphrase_accuracy}\n")
@@ -137,126 +134,71 @@ class CustomCollateFn:
         actual_batch = [actual_batch for _, actual_batch in batch]
         return collate_fn(actual_batch)
 
-def train_multitask(args):
-        
-    # Load data
-    # Create the data and its corresponding datasets and dataloader
-    sst_train_data, num_labels,para_train_data, sts_train_data = load_multitask_data(args.sst_train,args.para_train,args.sts_train, split ='train')
-    sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train') #Itis correct to use this slit for dev. The other option is test which does not load the labels
 
-    #Sentiment analysis
-    sst_train_data = SentenceClassificationDataset(sst_train_data, args)
-    sst_dev_data = SentenceClassificationDataset(sst_dev_data, args)
+def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1,sampling='sequential'):
 
+    #Temporarily initialized here but later in epoch loop to update current epoch and do annealed sampling
+    mtl_sampler = MultiTaskBatchSampler( datasets=train_datasets,
+    current_epoch=current_epoch,
+    total_epochs=total_epochs,
+    batch_size = batch_size,
+    mix_opt=1,
+    extra_task_ratio=0,
+    bin_size=64,
+    bin_on=False,
+    bin_grow_ratio=0.5,
+    sampling=sampling)
 
+    multi_task_train_dataset = MultiTaskDataset(train_datasets)
 
-    if torch.cuda.is_available():
-        sst_dev_dataloader = DataLoader(sst_dev_data, shuffle=False, batch_size=args.batch_size,
-                                        collate_fn=sst_dev_data.collate_fn, pin_memory=True )
+    collate_fns = {
+        0: train_datasets[0].collate_fn,
+        1: train_datasets[1].collate_fn,
+        2: train_datasets[2].collate_fn
+    }
 
-        #Paraphrasing
-        paraphrase_train_data = SentencePairDataset(para_train_data, args, isRegression =False)
-        paraphrase_dev_data = SentencePairDataset(para_dev_data, args, isRegression =False)
+    custom_collate_fn = CustomCollateFn(collate_fns)
 
-        paraphrase_dev_dataloader = DataLoader(paraphrase_dev_data, shuffle=False, batch_size=args.batch_size,
-                                        collate_fn=paraphrase_dev_data.collate_fn,  pin_memory=True)
-
-        #sts
-        sts_train_data = SentencePairDataset(sts_train_data, args, isRegression =True)
-        sts_dev_data = SentencePairDataset(sts_dev_data, args, isRegression =True)
-
-        sts_dev_dataloader = DataLoader(sts_dev_data, shuffle=False, batch_size=args.batch_size,
-                                    collate_fn=sts_dev_data.collate_fn,  pin_memory=True)
-
-        #MTL data loader
-        train_datasets = [sst_train_data,paraphrase_train_data, sts_train_data]
-        #Temporarily initialized here but later in epoch loop to update current epoch and do annealed sampling
-        mtl_sampler = MultiTaskBatchSampler(        datasets=train_datasets,
-            current_epoch=1,
-            total_epochs=args.epochs,
-            batch_size = args.batch_size,
-            mix_opt=1,
-            extra_task_ratio=0,
-            bin_size=64,
-            bin_on=False,
-            bin_grow_ratio=0.5,
-            sampling='sequential')
-
-        multi_task_train_dataset = MultiTaskDataset(train_datasets)
-
-        collate_fns = {
-            0: sst_train_data.collate_fn,
-            1: paraphrase_train_data.collate_fn,
-            2: sts_train_data.collate_fn
-        }
-
-        # Creating the custom collate function using the dictionary of collate functions
-        # Linked to each task id
-        custom_collate_fn = CustomCollateFn(collate_fns)
-
-        multi_task_train_data = DataLoader(
+    return DataLoader(
         multi_task_train_dataset,
         batch_sampler=mtl_sampler,
         collate_fn = custom_collate_fn,
         pin_memory=True
         )
-    else:
-        sst_train_data, num_labels,para_train_data, sts_train_data = load_multitask_data(args.sst_train,args.para_train,args.sts_train, split ='train')
-        sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train') #Itis correct to use this slit for dev. The other option is test which does not load the labels
 
-        #Sentiment analysis
-        sst_train_data = SentenceClassificationDataset(sst_train_data, args)
-        sst_dev_data = SentenceClassificationDataset(sst_dev_data, args)
+def train_multitask(args):
 
-        sst_dev_dataloader = DataLoader(sst_dev_data, shuffle=False, batch_size=args.batch_size,
-                                        collate_fn=sst_dev_data.collate_fn)
+    device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
+    # Load data
+    # Create the data and its corresponding datasets and dataloader
+    sst_train_data, num_labels,para_train_data, sts_train_data = load_multitask_data(args.sst_train,args.para_train,args.sts_train, split ='train')
+    sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train') #It is correct to use this slit for dev. The other option is test which does not load the labels
 
-        #Paraphrasing
-        paraphrase_train_data = SentencePairDataset(para_train_data, args, isRegression =False)
-        paraphrase_dev_data = SentencePairDataset(para_dev_data, args, isRegression =False)
+    #Sentiment analysis
+    sst_train_dataset = SentenceClassificationDataset(sst_train_data, args)
+    sst_dev_dataset = SentenceClassificationDataset(sst_dev_data, args)
+    #Paraphrasing
+    paraphrase_train_dataset = SentencePairDataset(para_train_data, args, isRegression =False)
+    paraphrase_dev_dataset = SentencePairDataset(para_dev_data, args, isRegression =False)
 
-        paraphrase_dev_dataloader = DataLoader(paraphrase_dev_data, shuffle=False, batch_size=args.batch_size,
-                                        collate_fn=paraphrase_dev_data.collate_fn)
+    #sts
+    sts_train_dataset = SentencePairDataset(sts_train_data, args, isRegression =True)
+    sts_dev_dataset = SentencePairDataset(sts_dev_data, args, isRegression =True)  
 
-        #sts
-        sts_train_data = SentencePairDataset(sts_train_data, args, isRegression =True)
-        sts_dev_data = SentencePairDataset(sts_dev_data, args, isRegression =True)
+    #MTL data loader
+    train_datasets = [sst_train_dataset,paraphrase_train_dataset, sts_train_dataset]
 
-        sts_dev_dataloader = DataLoader(sts_dev_data, shuffle=False, batch_size=args.batch_size,
-                                    collate_fn=sts_dev_data.collate_fn)
-
-        #MTL data loader
-        train_datasets = [sst_train_data,paraphrase_train_data, sts_train_data]
-        #Temporarily initialized here but later in epoch loop to update current epoch and do annealed sampling
-        mtl_sampler = MultiTaskBatchSampler(        datasets=train_datasets,
-            current_epoch=1,
-            total_epochs=args.epochs,
-            batch_size = args.batch_size,
-            mix_opt=1,
-            extra_task_ratio=0,
-            bin_size=64,
-            bin_on=False,
-            bin_grow_ratio=0.5,
-            sampling='sequential')
-
-        multi_task_train_dataset = MultiTaskDataset(train_datasets)
-
-        collate_fns = {
-            0: sst_train_data.collate_fn,
-            1: paraphrase_train_data.collate_fn,
-            2: sts_train_data.collate_fn
-        }
-
-        # Creating the custom collate function using the dictionary of collate functions
-        # Linked to each task id
-        custom_collate_fn = CustomCollateFn(collate_fns)
-
-        multi_task_train_data = DataLoader(
-        multi_task_train_dataset,
-        batch_sampler=mtl_sampler,
-        collate_fn = custom_collate_fn
-        )
-
+    multi_task_train_data = create_mtl_dataloader(train_datasets=train_datasets,
+                                                  total_epochs=args.epochs,batch_size=args.batch_size,current_epoch=1)
+    #Create dev dataloaders
+    sst_dev_dataloader = DataLoader(sst_dev_dataset, shuffle=False, batch_size=args.batch_size,
+                                    collate_fn=sst_dev_dataset.collate_fn, pin_memory=True )
+    
+    paraphrase_dev_dataloader = DataLoader(paraphrase_dev_dataset, shuffle=False, batch_size=args.batch_size,
+                                collate_fn=paraphrase_dev_dataset.collate_fn,  pin_memory=True)
+    
+    sts_dev_dataloader = DataLoader(sts_dev_dataset, shuffle=False, batch_size=args.batch_size,
+                            collate_fn=sts_dev_dataset.collate_fn,  pin_memory=True)
 
     # Init model
     config = {'hidden_dropout_prob': args.hidden_dropout_prob,
@@ -265,27 +207,20 @@ def train_multitask(args):
               'data_dir': '.',
               'option': args.option,
               'local_files_only': args.local_files_only}
-    print("12")
 
     config = SimpleNamespace(**config)
-    print("13")
     model = MultitaskBERT(config)
-    print("14")
     
 
-    model = model.to("cuda")
-    print("15")
+    model = model.to(device)
 
     lr = args.lr
     optimizer = AdamW(model.parameters(), lr=lr)
-    print("16")
     best_metric = 0.2
-    print(torch.cuda.is_available())
     print(f"running the train on the {device}")
     # Run for the specified number of epochs
         
     for epoch in range(args.epochs):
-        print("17")
         model.train()
         train_loss = 0
         num_batches = 0
@@ -295,9 +230,6 @@ def train_multitask(args):
 
         for batch in tqdm(multi_task_train_data, desc=f'train-{epoch}', disable=TQDM_DISABLE):
 
-            #Batch loading, prediction and loss depending on task:
-            
-
             optimizer.zero_grad()
             b_task_id, b_ids, b_mask, b_token_type_ids, b_labels = (
             batch['task_id'],
@@ -306,9 +238,10 @@ def train_multitask(args):
             batch['token_type_ids'].to(device),
             batch['labels'].to(device))
             
-            
             logits = model.predict(input_ids=b_ids,attention_mask=b_mask,token_type_ids=b_token_type_ids,task_id=b_task_id)
+
             batch_loss = [0]*3
+
             if b_task_id==0: #Sentiment analysis
                 sst_loss = F.cross_entropy(logits, b_labels.view(-1), reduction='mean')
                 batch_loss[b_task_id]=sst_loss
@@ -349,18 +282,14 @@ def train_multitask(args):
             train_loss += total_loss.item()
             num_batches += 1
 
+        #End of training Loop
 
-
-
-
-            #End of training batches
-        print("inside eval ")
         #Start dev evaluation 
-        (dev_paraphrase_accuracy, dev_para_y_pred, dev_para_sent_ids,
-            dev_sentiment_accuracy,dev_sst_y_pred, dev_sst_sent_ids,
-            dev_sts_corr, dev_sts_y_pred, dev__sent_ids) = model_eval_multitask(sst_dev_dataloader,
+        (dev_paraphrase_accuracy, _, _,
+            dev_sentiment_accuracy,_, _,
+            dev_sts_corr, _, _) = model_eval_multitask(sst_dev_dataloader,
                                                                         paraphrase_dev_dataloader,sts_dev_dataloader,model, device  )
-        print("outside eval ")
+        
         #We have to weight or average the three sores to save the best model.
         # In the diven code only sst is used
 
@@ -372,8 +301,6 @@ def train_multitask(args):
             print("model saved")
 
         print(f"Epoch {epoch}: train loss : {train_loss :.3f}, dev paraphrase acc : {dev_paraphrase_accuracy :.3f}, dev sentiment acc : {dev_sentiment_accuracy :.3f}, dev sts corr : {dev_sts_corr :.3f}, Best Metric : {best_metric :.3f}")
-        #Add train metrics to this print
-    
 
 
 def test_model(args, path ):
@@ -435,14 +362,8 @@ def get_args():
 
 if __name__ == "__main__":
 
-    
-    device = torch.device('cuda') if True else torch.device('cpu')
-    print(f"before the args {torch.cuda.is_available()}")
     args = get_args()
-    args.use_gpu = True
-    print(args.batch_size)
     args.filepath = f'./models/' # save path
-    print(f"after the args {torch.cuda.is_available()}")
     seed_everything(args.seed)  # fix the seed for reproducibility
     train_multitask(args)
     args.sts_test_out = f"{args.sts_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
@@ -450,5 +371,5 @@ if __name__ == "__main__":
     args.sst_test_out = f"{args.sst_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
     
     model_path = os.path.join( args.filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.pt")
-    test_model(args, model_path)
+    #test_model(args, model_path)
 
