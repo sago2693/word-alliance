@@ -1,0 +1,179 @@
+================================================================================
+JobID = 4887297
+User = bzkurs49, Account = bzkurs49
+Partition = grete:shared, Nodelist = ggpu109
+================================================================================
+/scratch/usr/bzkurs49/anaconda3/bin/python
+/usr/local/cuda-12.0/bin:/scratch/usr/bzkurs49/poetry/bin:/scratch/usr/bzkurs49/poetry/bin:/scratch/usr/bzkurs49/anaconda3/bin:/scratch/usr/bzkurs49/anaconda3/condabin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/opt/ddn/ime/bin:/sw/hlrn/bin:/usr/local/slurm/slurm/current/install/bin:/usr/local/slurm/slurm/current/install/sbin:/home/bzkurs49/.local/bin:/home/bzkurs49/bin:/opt/ddn/ime/bin
+# conda environments:
+#
+base                  *  /scratch/usr/bzkurs49/anaconda3
+dnlp                     /scratch/usr/bzkurs49/anaconda3/envs/dnlp
+pgkpr                    /scratch/usr/bzkurs49/anaconda3/envs/pgkpr
+
+Submitting job with sbatch from directory: /home/bzkurs49/repos/word-alliance
+Home directory: /home/bzkurs49
+Working directory: /home/bzkurs49/repos/word-alliance
+Current node: ggpu109
+added http proxy
+Python 3.8.17
+Collecting environment information...
+PyTorch version: 1.8.0
+Is debug build: False
+CUDA used to build PyTorch: 10.1
+ROCM used to build PyTorch: N/A
+
+OS: Rocky Linux 8.7 (Green Obsidian) (x86_64)
+GCC version: (GCC) 8.5.0 20210514 (Red Hat 8.5.0-16)
+Clang version: Could not collect
+CMake version: version 3.20.2
+
+Python version: 3.8 (64-bit runtime)
+Is CUDA available: True
+CUDA runtime version: Could not collect
+GPU models and configuration: GPU 0: NVIDIA A100-SXM4-40GB
+Nvidia driver version: 530.30.02
+cuDNN version: Could not collect
+HIP runtime version: N/A
+MIOpen runtime version: N/A
+
+Versions of relevant libraries:
+[pip3] numpy==1.24.2
+[pip3] torch==1.8.0
+[pip3] torchaudio==0.8.0a0+a751e1d
+[pip3] torchvision==0.15.1
+[conda] blas                      1.0                         mkl  
+[conda] cudatoolkit               10.1.243             h6bb024c_0  
+[conda] ffmpeg                    4.3                  hf484d3e_0    pytorch
+[conda] mkl                       2023.1.0         h6d00ec8_46342  
+[conda] mkl-service               2.4.0            py38h5eee18b_1  
+[conda] mkl_fft                   1.3.6            py38h417a72b_1  
+[conda] mkl_random                1.2.2            py38h417a72b_1  
+[conda] numpy                     1.24.3           py38hf6e8229_1  
+[conda] numpy-base                1.24.3           py38h060ed82_1  
+[conda] pytorch                   1.8.0           py3.8_cuda10.1_cudnn7.6.3_0    pytorch
+[conda] torchaudio                0.8.0                      py38    pytorch
+[conda] torchvision               0.9.0                py38_cu101    pytorch
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Fri_Jan__6_16:45:21_PST_2023
+Cuda compilation tools, release 12.0, V12.0.140
+Build cuda_12.0.r12.0/compiler.32267302_0
+before the args True
+64
+after the args True
+Loaded 8544 train examples from data/ids-sst-train.csv
+Loaded 141498 train examples from data/quora-train.csv
+Loaded 6040 train examples from data/sts-train.csv
+Loaded 1101 train examples from data/ids-sst-dev.csv
+Loaded 20212 train examples from data/quora-dev.csv
+Loaded 863 train examples from data/sts-dev.csv
+12
+13
+14
+15
+16
+True
+running the train on the cuda
+17
+inside eval 
+Paraphrase detection accuracy: 0.628
+Sentiment classification accuracy: 0.218
+Semantic Textual Similarity correlation: 0.528
+outside eval 
+the weighted avg 0.5360333190783371
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 0: train loss : 248092.437, dev paraphrase acc : 0.628, dev sentiment acc : 0.218, dev sts corr : 0.528, Best Metric : 0.536
+17
+inside eval 
+Paraphrase detection accuracy: 0.621
+Sentiment classification accuracy: 0.262
+Semantic Textual Similarity correlation: 0.415
+outside eval 
+the weighted avg 0.5297072729106336
+Epoch 1: train loss : 275353.862, dev paraphrase acc : 0.621, dev sentiment acc : 0.262, dev sts corr : 0.415, Best Metric : 0.536
+17
+inside eval 
+Paraphrase detection accuracy: 0.643
+Sentiment classification accuracy: 0.160
+Semantic Textual Similarity correlation: 0.282
+outside eval 
+the weighted avg 0.48076113377407426
+Epoch 2: train loss : 124819.233, dev paraphrase acc : 0.643, dev sentiment acc : 0.160, dev sts corr : 0.282, Best Metric : 0.536
+17
+inside eval 
+Paraphrase detection accuracy: 0.646
+Sentiment classification accuracy: 0.343
+Semantic Textual Similarity correlation: 0.511
+outside eval 
+the weighted avg 0.5809031291295117
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 3: train loss : 278316.054, dev paraphrase acc : 0.646, dev sentiment acc : 0.343, dev sts corr : 0.511, Best Metric : 0.581
+17
+inside eval 
+Paraphrase detection accuracy: 0.626
+Sentiment classification accuracy: 0.172
+Semantic Textual Similarity correlation: -0.029
+outside eval 
+the weighted avg 0.4274767430518552
+Epoch 4: train loss : 255260.683, dev paraphrase acc : 0.626, dev sentiment acc : 0.172, dev sts corr : -0.029, Best Metric : 0.581
+17
+inside eval 
+Paraphrase detection accuracy: 0.622
+Sentiment classification accuracy: 0.284
+Semantic Textual Similarity correlation: 0.185
+outside eval 
+the weighted avg 0.4990155094131852
+Epoch 5: train loss : 288976.788, dev paraphrase acc : 0.622, dev sentiment acc : 0.284, dev sts corr : 0.185, Best Metric : 0.581
+17
+inside eval 
+Paraphrase detection accuracy: 0.635
+Sentiment classification accuracy: 0.376
+Semantic Textual Similarity correlation: 0.456
+outside eval 
+the weighted avg 0.5789664855231638
+Epoch 6: train loss : 268212.559, dev paraphrase acc : 0.635, dev sentiment acc : 0.376, dev sts corr : 0.456, Best Metric : 0.581
+17
+inside eval 
+Paraphrase detection accuracy: 0.622
+Sentiment classification accuracy: 0.271
+Semantic Textual Similarity correlation: 0.508
+outside eval 
+the weighted avg 0.5482192810411695
+Epoch 7: train loss : 286614.644, dev paraphrase acc : 0.622, dev sentiment acc : 0.271, dev sts corr : 0.508, Best Metric : 0.581
+17
+inside eval 
+Paraphrase detection accuracy: 0.639
+Sentiment classification accuracy: 0.305
+Semantic Textual Similarity correlation: 0.518
+outside eval 
+the weighted avg 0.5672076545141889
+Epoch 8: train loss : 236921.084, dev paraphrase acc : 0.639, dev sentiment acc : 0.305, dev sts corr : 0.518, Best Metric : 0.581
+17
+inside eval 
+Paraphrase detection accuracy: 0.625
+Sentiment classification accuracy: 0.335
+Semantic Textual Similarity correlation: 0.460
+outside eval 
+the weighted avg 0.5629027493886632
+Epoch 9: train loss : 277447.262, dev paraphrase acc : 0.625, dev sentiment acc : 0.335, dev sts corr : 0.460, Best Metric : 0.581
+Loaded model to test from ./models/
+Loaded 2210 test examples from data/ids-sst-test-student.csv
+Loaded 40429 test examples from data/quora-test-student.csv
+Loaded 1379 test examples from data/sts-test-student.csv
+Loaded 1101 dev examples from data/ids-sst-dev.csv
+Loaded 20212 dev examples from data/quora-dev.csv
+Loaded 863 dev examples from data/sts-dev.csv
+============ Job Information ===================================================
+Submitted: 2023-09-02T11:57:14
+Started: 2023-09-02T11:57:15
+Ended: 2023-09-02T14:16:16
+Elapsed: 140 min, Limit: 1440 min, Difference: 1300 min
+CPUs: 4, Nodes: 1
+Estimated NPL: ================================================================================

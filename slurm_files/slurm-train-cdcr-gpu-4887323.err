@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "multitask_classifier.py", line 18, in <module>
+    from evaluation import model_eval_sst, test_model_multitask, model_eval_multitask, compute_loss_weights
+  File "/home/bzkurs49/repos/word-alliance/evaluation.py", line 96
+    <<<<<<< HEAD
+    ^
+SyntaxError: invalid syntax

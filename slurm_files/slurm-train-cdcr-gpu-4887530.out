@@ -1,0 +1,385 @@
+================================================================================
+JobID = 4887530
+User = bzkurs49, Account = bzkurs49
+Partition = grete:shared, Nodelist = ggpu144
+================================================================================
+/scratch/usr/bzkurs49/anaconda3/bin/python
+/usr/local/cuda-12.0/bin:/scratch/usr/bzkurs49/poetry/bin:/scratch/usr/bzkurs49/poetry/bin:/scratch/usr/bzkurs49/anaconda3/bin:/scratch/usr/bzkurs49/anaconda3/condabin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/opt/ddn/ime/bin:/sw/hlrn/bin:/usr/local/slurm/slurm/current/install/bin:/usr/local/slurm/slurm/current/install/sbin:/home/bzkurs49/.local/bin:/home/bzkurs49/bin:/opt/ddn/ime/bin
+# conda environments:
+#
+base                  *  /scratch/usr/bzkurs49/anaconda3
+dnlp                     /scratch/usr/bzkurs49/anaconda3/envs/dnlp
+pgkpr                    /scratch/usr/bzkurs49/anaconda3/envs/pgkpr
+
+Submitting job with sbatch from directory: /home/bzkurs49/repos/word-alliance
+Home directory: /home/bzkurs49
+Working directory: /home/bzkurs49/repos/word-alliance
+Current node: ggpu144
+added http proxy
+Python 3.8.17
+Collecting environment information...
+PyTorch version: 2.0.0+cu117
+Is debug build: False
+CUDA used to build PyTorch: 11.7
+ROCM used to build PyTorch: N/A
+
+OS: Rocky Linux 8.7 (Green Obsidian) (x86_64)
+GCC version: (GCC) 8.5.0 20210514 (Red Hat 8.5.0-16)
+Clang version: Could not collect
+CMake version: version 3.20.2
+Libc version: glibc-2.28
+
+Python version: 3.8.17 (default, Jul  5 2023, 21:04:15)  [GCC 11.2.0] (64-bit runtime)
+Python platform: Linux-4.18.0-425.19.2.el8_7.x86_64-x86_64-with-glibc2.17
+Is CUDA available: True
+CUDA runtime version: 12.0.140
+CUDA_MODULE_LOADING set to: LAZY
+GPU models and configuration: GPU 0: NVIDIA A100-SXM4-80GB
+Nvidia driver version: 530.30.02
+cuDNN version: Could not collect
+HIP runtime version: N/A
+MIOpen runtime version: N/A
+Is XNNPACK available: True
+
+CPU:
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Byte Order:          Little Endian
+CPU(s):              128
+On-line CPU(s) list: 0-127
+Thread(s) per core:  2
+Core(s) per socket:  32
+Socket(s):           2
+NUMA node(s):        8
+Vendor ID:           AuthenticAMD
+CPU family:          25
+Model:               1
+Model name:          AMD EPYC 7513 32-Core Processor
+Stepping:            1
+CPU MHz:             2600.000
+CPU max MHz:         3681.6399
+CPU min MHz:         1500.0000
+BogoMIPS:            5200.54
+Virtualization:      AMD-V
+L1d cache:           32K
+L1i cache:           32K
+L2 cache:            512K
+L3 cache:            32768K
+NUMA node0 CPU(s):   0-7,64-71
+NUMA node1 CPU(s):   8-15,72-79
+NUMA node2 CPU(s):   16-23,80-87
+NUMA node3 CPU(s):   24-31,88-95
+NUMA node4 CPU(s):   32-39,96-103
+NUMA node5 CPU(s):   40-47,104-111
+NUMA node6 CPU(s):   48-55,112-119
+NUMA node7 CPU(s):   56-63,120-127
+Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 invpcid_single hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr wbnoinvd amd_ppin arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smca fsrm
+
+Versions of relevant libraries:
+[pip3] numpy==1.24.2
+[pip3] torch==2.0.0+cu117
+[pip3] torchaudio==2.0.1+cu117
+[pip3] torchvision==0.15.1+cu117
+[conda] blas                      1.0                         mkl  
+[conda] cudatoolkit               10.1.243             h6bb024c_0  
+[conda] ffmpeg                    4.3                  hf484d3e_0    pytorch
+[conda] mkl                       2023.1.0         h6d00ec8_46342  
+[conda] mkl-service               2.4.0            py38h5eee18b_1  
+[conda] mkl_fft                   1.3.6            py38h417a72b_1  
+[conda] mkl_random                1.2.2            py38h417a72b_1  
+[conda] numpy                     1.24.3           py38hf6e8229_1  
+[conda] numpy-base                1.24.3           py38h060ed82_1  
+[conda] torch                     2.0.0+cu117              pypi_0    pypi
+[conda] torchaudio                2.0.1+cu117              pypi_0    pypi
+[conda] torchvision               0.15.1+cu117             pypi_0    pypi
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Fri_Jan__6_16:45:21_PST_2023
+Cuda compilation tools, release 12.0, V12.0.140
+Build cuda_12.0.r12.0/compiler.32267302_0
+before the args True
+64
+after the args True
+Loaded 8544 train examples from data/ids-sst-train.csv
+Loaded 141498 train examples from data/quora-train.csv
+Loaded 6040 train examples from data/sts-train.csv
+Loaded 1101 train examples from data/ids-sst-dev.csv
+Loaded 20212 train examples from data/quora-dev.csv
+Loaded 863 train examples from data/sts-dev.csv
+12
+13
+14
+15
+16
+True
+running the train on the cuda
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.865
+Sentiment classification accuracy: 0.428
+Semantic Textual Similarity correlation: 0.856
+outside eval 
+the weighted avg 0.7395352074460328
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 0: train loss : 63090.413, dev paraphrase acc : 0.865, dev sentiment acc : 0.428, dev sts corr : 0.856, Best Metric : 0.740
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.870
+Sentiment classification accuracy: 0.444
+Semantic Textual Similarity correlation: 0.808
+outside eval 
+the weighted avg 0.7386037163224097
+Epoch 1: train loss : 40059.444, dev paraphrase acc : 0.870, dev sentiment acc : 0.444, dev sts corr : 0.808, Best Metric : 0.740
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.869
+Sentiment classification accuracy: 0.474
+Semantic Textual Similarity correlation: 0.875
+outside eval 
+the weighted avg 0.7594893770674227
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 2: train loss : 75865.685, dev paraphrase acc : 0.869, dev sentiment acc : 0.474, dev sts corr : 0.875, Best Metric : 0.759
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.872
+Sentiment classification accuracy: 0.341
+Semantic Textual Similarity correlation: 0.883
+outside eval 
+the weighted avg 0.7174062065191933
+Epoch 3: train loss : 106064.070, dev paraphrase acc : 0.872, dev sentiment acc : 0.341, dev sts corr : 0.883, Best Metric : 0.759
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.879
+Sentiment classification accuracy: 0.443
+Semantic Textual Similarity correlation: 0.878
+outside eval 
+the weighted avg 0.7530508097724521
+Epoch 4: train loss : 50032.323, dev paraphrase acc : 0.879, dev sentiment acc : 0.443, dev sts corr : 0.878, Best Metric : 0.759
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.879
+Sentiment classification accuracy: 0.478
+Semantic Textual Similarity correlation: 0.882
+outside eval 
+the weighted avg 0.7649721562248368
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 5: train loss : 60309.679, dev paraphrase acc : 0.879, dev sentiment acc : 0.478, dev sts corr : 0.882, Best Metric : 0.765
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.879
+Sentiment classification accuracy: 0.480
+Semantic Textual Similarity correlation: 0.882
+outside eval 
+the weighted avg 0.7659636271876056
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 6: train loss : 44401.842, dev paraphrase acc : 0.879, dev sentiment acc : 0.480, dev sts corr : 0.882, Best Metric : 0.766
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.886
+Sentiment classification accuracy: 0.476
+Semantic Textual Similarity correlation: 0.883
+outside eval 
+the weighted avg 0.7670309231356435
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 7: train loss : 45927.327, dev paraphrase acc : 0.886, dev sentiment acc : 0.476, dev sts corr : 0.883, Best Metric : 0.767
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.486
+Semantic Textual Similarity correlation: 0.884
+outside eval 
+the weighted avg 0.7709322300172007
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 8: train loss : 36646.492, dev paraphrase acc : 0.887, dev sentiment acc : 0.486, dev sts corr : 0.884, Best Metric : 0.771
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.885
+Sentiment classification accuracy: 0.490
+Semantic Textual Similarity correlation: 0.873
+outside eval 
+the weighted avg 0.7700537058208825
+Epoch 9: train loss : 30498.557, dev paraphrase acc : 0.885, dev sentiment acc : 0.490, dev sts corr : 0.873, Best Metric : 0.771
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.885
+Sentiment classification accuracy: 0.496
+Semantic Textual Similarity correlation: 0.876
+outside eval 
+the weighted avg 0.7719832670725633
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 10: train loss : 27856.647, dev paraphrase acc : 0.885, dev sentiment acc : 0.496, dev sts corr : 0.876, Best Metric : 0.772
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.880
+Sentiment classification accuracy: 0.500
+Semantic Textual Similarity correlation: 0.886
+outside eval 
+the weighted avg 0.7737761944827892
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 11: train loss : 29215.819, dev paraphrase acc : 0.880, dev sentiment acc : 0.500, dev sts corr : 0.886, Best Metric : 0.774
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.890
+Sentiment classification accuracy: 0.496
+Semantic Textual Similarity correlation: 0.880
+outside eval 
+the weighted avg 0.7745751937584886
+999999999999999999999
+64
+save the model to ./models/
+model saved
+Epoch 12: train loss : 23505.617, dev paraphrase acc : 0.890, dev sentiment acc : 0.496, dev sts corr : 0.880, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.487
+Semantic Textual Similarity correlation: 0.886
+outside eval 
+the weighted avg 0.7717627677733263
+Epoch 13: train loss : 21453.571, dev paraphrase acc : 0.888, dev sentiment acc : 0.487, dev sts corr : 0.886, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.490
+Semantic Textual Similarity correlation: 0.860
+outside eval 
+the weighted avg 0.768174893285262
+Epoch 14: train loss : 15953.038, dev paraphrase acc : 0.887, dev sentiment acc : 0.490, dev sts corr : 0.860, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.886
+Sentiment classification accuracy: 0.500
+Semantic Textual Similarity correlation: 0.874
+outside eval 
+the weighted avg 0.7737144301951626
+Epoch 15: train loss : 23684.253, dev paraphrase acc : 0.886, dev sentiment acc : 0.500, dev sts corr : 0.874, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.889
+Sentiment classification accuracy: 0.507
+Semantic Textual Similarity correlation: 0.853
+outside eval 
+the weighted avg 0.7732095834965165
+Epoch 16: train loss : 18737.911, dev paraphrase acc : 0.889, dev sentiment acc : 0.507, dev sts corr : 0.853, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.499
+Semantic Textual Similarity correlation: 0.864
+outside eval 
+the weighted avg 0.7717704157972837
+Epoch 17: train loss : 20022.746, dev paraphrase acc : 0.887, dev sentiment acc : 0.499, dev sts corr : 0.864, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.501
+Semantic Textual Similarity correlation: 0.863
+outside eval 
+the weighted avg 0.7727278801101412
+Epoch 18: train loss : 13378.554, dev paraphrase acc : 0.888, dev sentiment acc : 0.501, dev sts corr : 0.863, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.883
+Sentiment classification accuracy: 0.490
+Semantic Textual Similarity correlation: 0.841
+outside eval 
+the weighted avg 0.7638116075681838
+Epoch 19: train loss : 15113.175, dev paraphrase acc : 0.883, dev sentiment acc : 0.490, dev sts corr : 0.841, Best Metric : 0.775
+Loaded model to test from ./models/
+Loaded 2210 test examples from data/ids-sst-test-student.csv
+Loaded 40429 test examples from data/quora-test-student.csv
+Loaded 1379 test examples from data/sts-test-student.csv
+Loaded 1101 dev examples from data/ids-sst-dev.csv
+Loaded 20212 dev examples from data/quora-dev.csv
+Loaded 863 dev examples from data/sts-dev.csv
+============ Job Information ===================================================
+Submitted: 2023-09-02T14:58:32
+Started: 2023-09-02T14:58:53
+Ended: 2023-09-02T18:46:03
+Elapsed: 228 min, Limit: 1440 min, Difference: 1212 min
+CPUs: 4, Nodes: 1
+Estimated NPL: ================================================================================
