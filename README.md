@@ -1,12 +1,11 @@
 # DNLP SS23 Final Project - Multitask BERT
 
-This is the starting code for the default final project for the Deep Learning for Natural Language Processing course at the University of Göttingen. You can find the handout [here](https://1drv.ms/b/s!AkgwFZyClZ_qk718ObYhi8tF4cjSSQ?e=3gECnf)
+In this repository you will find code for the final project of the the _M.Inf.2202 Deep Learning for Natural Language Processing_ course at the University of Göttingen. You can find the handout [here](https://1drv.ms/b/s!AkgwFZyClZ_qk718ObYhi8tF4cjSSQ?e=3gECnf).
 
-In this project, you will implement some important components of the BERT model to better understanding its architecture. 
-You will then use the embeddings produced by your BERT model on three downstream tasks: sentiment classification, paraphrase detection and semantic similarity.
+In this project, important components of the BERT model are implemented. 
+Embeddings produced by our BERT model were used for three downstream tasks: sentiment classification, paraphrase detection and semantic similarity.
 
-After finishing the BERT implementation, you will have a simple model that simultaneously performs the three tasks.
-You will then implement extensions to improve on top of this baseline.
+We implemented (ADD EXTENSION HERE) to improve the baseline model.
 
 ## Setup instructions
 
