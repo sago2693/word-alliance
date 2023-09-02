@@ -88,8 +88,9 @@ class MultitaskBERT(nn.Module):
 
 
 
-def save_model(model, optimizer, args, config, filepath,epoch):
+def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weighted_avg,  dev_sentiment_accuracy, dev_paraphrase_accuracy, dev_sts_corr,loss):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    print(999999999999999999999)
     save_info = {
         'model': model.state_dict(),
         'optim': optimizer.state_dict(),
@@ -100,10 +101,28 @@ def save_model(model, optimizer, args, config, filepath,epoch):
         'torch_rng': torch.random.get_rng_state(),
     }
     model_number = 1
-    while os.path.exists(os.path.join(filepath, f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}-model_{model_number}.pt")):
-        model_number += 1
-    model_path = os.path.join(filepath, f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}-model_{model_number}.pt")
+    print(batch_size)
+    # while os.path.exists(os.path.join(filepath, f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")):
+        # model_number += 1
+
+    model_path = os.path.join(filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")
     torch.save(save_info, model_path)
+
+    os.makedirs(os.path.dirname("./Models_Meta_Data/"), exist_ok=True)
+    txt_filename = os.path.join("./Models_Meta_Data/", f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}-model_{model_number}.txt")
+    # txt_filename = os.path.splitext(txt_path)[0] + ".txt"
+    with open(txt_filename, 'w') as txt_file:
+        txt_file.write(f"Model {model_number} information:\n")
+        txt_file.write(f"weighted_avg: {weighted_avg}\n")
+        txt_file.write(f"dev_sentiment_accuracy: {dev_sentiment_accuracy}\n")
+        txt_file.write(f"dev_paraphrase_accuracy: {dev_paraphrase_accuracy}\n")
+        txt_file.write(f"dev_sts_corr: {dev_sts_corr}\n")
+        txt_file.write(f"Loss: {loss}\n")
+        txt_file.write(f"Epoch: {epoch}\n")
+        txt_file.write(f"from total Epochs: {args.epochs}\n")
+
+        txt_file.write(f"Learning rate: {args.lr}\n")
+        txt_file.write(f"Batch size: {batch_size}\n")
     print(f"save the model to {filepath}")
 
 #Collate function dependent on current task
@@ -246,21 +265,27 @@ def train_multitask(args):
               'data_dir': '.',
               'option': args.option,
               'local_files_only': args.local_files_only}
+    print("12")
 
     config = SimpleNamespace(**config)
-
+    print("13")
     model = MultitaskBERT(config)
-    model = model.to(device)
+    print("14")
+    
+
+    model = model.to("cuda")
+    print("15")
 
     lr = args.lr
     optimizer = AdamW(model.parameters(), lr=lr)
-
+    print("16")
     best_metric = 0.2
     print(torch.cuda.is_available())
     print(f"running the train on the {device}")
     # Run for the specified number of epochs
         
     for epoch in range(args.epochs):
+        print("17")
         model.train()
         train_loss = 0
         num_batches = 0
@@ -325,6 +350,9 @@ def train_multitask(args):
             num_batches += 1
 
 
+
+
+
             #End of training batches
         print("inside eval ")
         #Start dev evaluation 
@@ -340,17 +368,21 @@ def train_multitask(args):
         print(f"the weighted avg {weighted_avg}")
         if   weighted_avg >=  best_metric :
             best_metric = weighted_avg
-            save_model(model, optimizer, args, config, args.filepath, epoch)
+            save_model(model, optimizer, args, config, args.filepath, epoch,args.batch_size, weighted_avg,  dev_sentiment_accuracy, dev_paraphrase_accuracy, dev_sts_corr, train_loss)
             print("model saved")
 
         print(f"Epoch {epoch}: train loss : {train_loss :.3f}, dev paraphrase acc : {dev_paraphrase_accuracy :.3f}, dev sentiment acc : {dev_sentiment_accuracy :.3f}, dev sts corr : {dev_sts_corr :.3f}, Best Metric : {best_metric :.3f}")
         #Add train metrics to this print
+    
 
 
-def test_model(args):
+def test_model(args, path ):
     with torch.no_grad():
-        device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
-        saved = torch.load(args.filepath)
+        device = torch.device('cuda') if True else torch.device('cpu')
+        # saved = torch.load(args.filepath)
+        ###TODO change the file path to the one with the best peformance in terms of the best metric
+        
+        saved = torch.load(path)
         config = saved['model_config']
 
         model = MultitaskBERT(config)
@@ -383,13 +415,13 @@ def get_args():
     parser.add_argument("--use_gpu", action='store_true')
 
     parser.add_argument("--sst_dev_out", type=str, default="predictions/sst-dev-output.csv")
-    parser.add_argument("--sst_test_out", type=str, default="predictions/sst-test-output.csv")
+    parser.add_argument("--sst_test_out", type=str, default="predictions/sst-test-output")
 
     parser.add_argument("--para_dev_out", type=str, default="predictions/para-dev-output.csv")
-    parser.add_argument("--para_test_out", type=str, default="predictions/para-test-output.csv")
+    parser.add_argument("--para_test_out", type=str, default="predictions/para-test-output")
 
     parser.add_argument("--sts_dev_out", type=str, default="predictions/sts-dev-output.csv")
-    parser.add_argument("--sts_test_out", type=str, default="predictions/sts-test-output.csv")
+    parser.add_argument("--sts_test_out", type=str, default="predictions/sts-test-output")
 
     # hyper parameters
     parser.add_argument("--batch_size", help='sst: 64 can fit a 12GB GPU', type=int, default=64)
@@ -408,9 +440,15 @@ if __name__ == "__main__":
     print(f"before the args {torch.cuda.is_available()}")
     args = get_args()
     args.use_gpu = True
-    
+    print(args.batch_size)
     args.filepath = f'./models/' # save path
     print(f"after the args {torch.cuda.is_available()}")
     seed_everything(args.seed)  # fix the seed for reproducibility
     train_multitask(args)
-    # test_model(args)
+    args.sts_test_out = f"{args.sts_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    args.para_test_out = f"{args.para_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    args.sst_test_out = f"{args.sst_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    
+    model_path = os.path.join( args.filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.pt")
+    test_model(args, model_path)
+
