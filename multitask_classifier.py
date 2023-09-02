@@ -107,7 +107,7 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
     torch.save(save_info, model_path)
 
     os.makedirs(os.path.dirname("./Models_Meta_Data/"), exist_ok=True)
-    txt_filename = os.path.join("./Models_Meta_Data/", f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}-model_{model_number}.txt")
+    txt_filename = os.path.join("./Models_Meta_Data/", f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}.txt")
     # txt_filename = os.path.splitext(txt_path)[0] + ".txt"
     with open(txt_filename, 'w') as txt_file:
         txt_file.write(f"weighted_avg: {weighted_avg}\n")
@@ -188,8 +188,6 @@ def train_multitask(args):
     #MTL data loader
     train_datasets = [sst_train_dataset,paraphrase_train_dataset, sts_train_dataset]
 
-    multi_task_train_data = create_mtl_dataloader(train_datasets=train_datasets,
-                                                  total_epochs=args.epochs,batch_size=args.batch_size,current_epoch=1)
     #Create dev dataloaders
     sst_dev_dataloader = DataLoader(sst_dev_dataset, shuffle=False, batch_size=args.batch_size,
                                     collate_fn=sst_dev_dataset.collate_fn, pin_memory=True )
@@ -221,6 +219,11 @@ def train_multitask(args):
     # Run for the specified number of epochs
         
     for epoch in range(args.epochs):
+
+        multi_task_train_data = create_mtl_dataloader(train_datasets=train_datasets,
+                                                  total_epochs=args.epochs,batch_size=args.batch_size,
+                                                  current_epoch=(epoch+1),sampling="annealed")
+            
         model.train()
         train_loss = 0
         num_batches = 0
@@ -371,5 +374,5 @@ if __name__ == "__main__":
     args.sst_test_out = f"{args.sst_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
     
     model_path = os.path.join( args.filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.pt")
-    #test_model(args, model_path)
+    test_model(args, model_path)
 

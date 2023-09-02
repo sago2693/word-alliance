@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=train-cdcr-gpu
-#SBATCH -t 24:00:00                  # estimated time # TODO: adapt to your needs
+#SBATCH -t 02:30:00                  # estimated time # TODO: adapt to your needs
 #SBATCH -p grete:shared              # the partition you are training on (i.e., which nodes), for nodes see sinfo -p grete:shared --format=%N,%G
 #SBATCH -G A100:1                   # take 1 GPU, see https://www.hlrn.de/doc/display/PUB/GPU+Usage for more options
 #SBATCH --mem-per-gpu=30G             # setting the right constraints for the splitted gpu partitions
@@ -47,6 +47,6 @@ nvcc -V
 #finetune setting
 #python -u classifier.py --option finetune --use_gpu --epochs 30 --batch_size 128 --lr 1e-5
 #python -u multitask_classifier.py --option pretrain --lr 1e-3 --batch_size 64 --local_files_only
-python -u multitask_classifier.py --option finetune --lr 1e-5 --batch_size 64 --local_files_only
+python -u multitask_classifier.py --option finetune --lr 1e-5 --batch_size 64 --local_files_only --use_gpu
 # Run the script with logger:
 #python -u train_with_logger.py -l ~/${SLURM_JOB_NAME}_${SLURM_JOB_ID}  -t True -p True -d True -s True -f True
