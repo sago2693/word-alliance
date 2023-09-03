@@ -1,4 +1,4 @@
-# It is better to copy the code here instead of importing to prevent the arg part from running
+
 import torch
 
 from torch.utils.data import DataLoader
@@ -7,6 +7,9 @@ import torch.nn.functional as F
 from tqdm import tqdm
 from torch import nn
 from types import SimpleNamespace
+from tokenizers.processors import TemplateProcessing
+import torch.optim.lr_scheduler as lr_scheduler
+
 from datasets import SentenceClassificationDataset, SentencePairDataset, \
     load_multitask_data
 from bert import BertModel
@@ -17,7 +20,7 @@ from tokenizer import BertTokenizer
 import os
 
 N_SENTIMENT_CLASSES = 5
-TQDM_DISABLE=False
+BERT_HIDDEN_SIZE = 768
 
 
 # fix the random seed
@@ -31,17 +34,7 @@ def seed_everything(seed=11711):
     torch.backends.cudnn.deterministic = True
 
 
-BERT_HIDDEN_SIZE = 768
-
-
 class MultitaskBERT(nn.Module):
-    '''
-    This module should use BERT for 3 tasks:
-
-    - Sentiment classification (predict_sentiment)
-    - Paraphrase detection (predict_paraphrase)
-    - Semantic Textual Similarity (predict_similarity)
-    '''
     def __init__(self, config):
         super(MultitaskBERT, self).__init__()
         # You will want to add layers here to perform the downstream tasks.
@@ -52,7 +45,6 @@ class MultitaskBERT(nn.Module):
                 param.requires_grad = False
             elif config.option == 'finetune':
                 param.requires_grad = True
-        ### TODO
         self.drop = torch.nn.Dropout(p=0.3)
         self.sst_classifier = torch.nn.Linear(self.bert.config.hidden_size, N_SENTIMENT_CLASSES)
         self.para_classifier = torch.nn.Linear(self.bert.config.hidden_size, 1)
@@ -63,9 +55,6 @@ class MultitaskBERT(nn.Module):
     def forward(self, input_ids, attention_mask,token_type_ids):
         'Takes a batch of sentences and produces embeddings for them.'
         # The final BERT embedding is the hidden state of [CLS] token (the first token)
-        # Here, you can start by just returning the embeddings straight from BERT.
-        # When thinking of improvements, you can later try modifying this
-        # (e.g., by adding other layers).
         bert_out = self.bert(input_ids, attention_mask,token_type_ids) 
         dropped = self.drop(bert_out['pooler_output'])
         return dropped
@@ -83,28 +72,27 @@ class MultitaskBERT(nn.Module):
             raise ValueError("Invalid task_id value. Expected 0, 1, or 2.")
 
 
-
+# saves the model parameters and metadata for the training of the model 
 def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weighted_avg,  dev_sentiment_accuracy, dev_paraphrase_accuracy, dev_sts_corr,loss):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
     save_info = {
         'model': model.state_dict(),
         'optim': optimizer.state_dict(),
+        'scheduler': scheduler.state_dict(),
         'args': args,
         'model_config': config,
         'system_rng': random.getstate(),
         'numpy_rng': np.random.get_state(),
         'torch_rng': torch.random.get_rng_state(),
     }
-    # while os.path.exists(os.path.join(filepath, f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")):
-        # model_number += 1
+
 
     model_path = os.path.join(filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")
     torch.save(save_info, model_path)
 
     os.makedirs(os.path.dirname("./Models_Meta_Data/"), exist_ok=True)
     txt_filename = os.path.join("./Models_Meta_Data/", f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}.txt")
-    # txt_filename = os.path.splitext(txt_path)[0] + ".txt"
     with open(txt_filename, 'w') as txt_file:
         txt_file.write(f"weighted_avg: {weighted_avg}\n")
         txt_file.write(f"dev_sentiment_accuracy: {dev_sentiment_accuracy}\n")
@@ -118,22 +106,19 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
         txt_file.write(f"Batch size: {batch_size}\n")
     print(f"save the model to {filepath}")
 
-#Collate function dependent on current task
+#class which processes and loads data in batches  
 class CustomCollateFn:
     def __init__(self, collate_fns):
         self.collate_fns = collate_fns
 
     def __call__(self, batch):
-        task_id,_= batch[0] #This tuple is defined in the MultiTaskDataset class
-        #This only works if a batch only contains data from one task
+        task_id,_= batch[0] 
         collate_fn = self.collate_fns[task_id]
         actual_batch = [actual_batch for _, actual_batch in batch]
         return collate_fn(actual_batch)
 
-
+# creates dataloader for multitask learning
 def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1,sampling='sequential'):
-
-    #Temporarily initialized here but later in epoch loop to update current epoch and do annealed sampling
     mtl_sampler = MultiTaskBatchSampler( datasets=train_datasets,
     current_epoch=current_epoch,
     total_epochs=total_epochs,
@@ -142,7 +127,7 @@ def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1
     extra_task_ratio=0,
     bin_size=64,
     bin_on=False,
-    bin_grow_ratio=0.5,
+    bin_grow_ratio=0.5, #groups samples in batches according to length, so that samples in a batch would have similar length 
     sampling=sampling)
 
     multi_task_train_dataset = MultiTaskDataset(train_datasets)
@@ -162,6 +147,7 @@ def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1
         pin_memory=True
         )
 
+
 def train_multitask(args):
 
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
@@ -170,14 +156,14 @@ def train_multitask(args):
     sst_train_data, num_labels,para_train_data, sts_train_data = load_multitask_data(args.sst_train,args.para_train,args.sts_train, split ='train')
     sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train') #It is correct to use this slit for dev. The other option is test which does not load the labels
 
-    #Sentiment analysis
+    #Sentiment Analysis
     sst_train_dataset = SentenceClassificationDataset(sst_train_data, args)
     sst_dev_dataset = SentenceClassificationDataset(sst_dev_data, args)
     #Paraphrasing
     paraphrase_train_dataset = SentencePairDataset(para_train_data, args, isRegression =False)
     paraphrase_dev_dataset = SentencePairDataset(para_dev_data, args, isRegression =False)
 
-    #sts
+    #Semantic Textual Similarity (STS)
     sts_train_dataset = SentencePairDataset(sts_train_data, args, isRegression =True)
     sts_dev_dataset = SentencePairDataset(sts_dev_data, args, isRegression =True)  
 
@@ -213,6 +199,7 @@ def train_multitask(args):
 
     lr = args.lr
     optimizer = AdamW(model.parameters(), lr=lr)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.95)
     best_metric = 0.2
     print(f"running the train on the {device}")
     # Run for the specified number of epochs
@@ -231,7 +218,7 @@ def train_multitask(args):
         paraphrase_train_loss_list = []
         sts_train_loss_list = []
 
-        for batch in tqdm(multi_task_train_data, desc=f'train-{epoch}', disable=TQDM_DISABLE):
+        for batch in tqdm(multi_task_train_data, desc=f'train-{epoch}', disable=args.tqdm_disable):
 
             optimizer.zero_grad()
             b_task_id, b_ids, b_mask, b_token_type_ids, b_labels = (
@@ -293,7 +280,7 @@ def train_multitask(args):
             dev_sts_corr, _, _) = model_eval_multitask(sst_dev_dataloader,
                                                                         paraphrase_dev_dataloader,sts_dev_dataloader,model, device  )
         
-        #We have to weight or average the three sores to save the best model.
+        #We have to weight or average the three scores to save the best model.
         # In the diven code only sst is used
 
         weighted_avg = 0.333 * dev_sentiment_accuracy + 0.333 * dev_paraphrase_accuracy + 0.333 * ((dev_sts_corr +1) / 2)
@@ -308,18 +295,13 @@ def train_multitask(args):
 
 def test_model(args, path ):
     with torch.no_grad():
-        device = torch.device('cuda') if True else torch.device('cpu')
-        # saved = torch.load(args.filepath)
-        ###TODO change the file path to the one with the best peformance in terms of the best metric
-        
+        device = torch.device('cuda') if True else torch.device('cpu')        
         saved = torch.load(path)
         config = saved['model_config']
-
         model = MultitaskBERT(config)
         model.load_state_dict(saved['model'])
         model = model.to(device)
         print(f"Loaded model to test from {args.filepath}")
-
         test_model_multitask(args, model, device)
 
 
@@ -361,6 +343,7 @@ def get_args():
     parser.add_argument("--local_files_only", action='store_true')
     
     parser.add_argument("--annealed_sampling", action='store_true')
+    parser.add_argument("--tqdm_disable", action='store_true')
 
     args = parser.parse_args()
     

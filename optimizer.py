@@ -53,11 +53,7 @@ class AdamW(Optimizer):
                 state['second_moment'] = group['betas'][1]*state['second_moment'] + (1-group['betas'][1])*grad**2
                 
                 bias_correction1 = 1 - group['betas'][0] ** state['step']
-                bias_correction2 = 1 - group['betas'][1] ** state['step']
-    
-                # # Apply bias correction
-                # bias_corrected_first_moment = state['first_moment'] / bias_correction1
-                # bias_corrected_second_moment = state['second_moment'] / bias_correction2    
+                bias_correction2 = 1 - group['betas'][1] ** state['step']  
     
                 # Update parameters
                 step_size = group['lr'] * (bias_correction2)**0.5 / bias_correction1

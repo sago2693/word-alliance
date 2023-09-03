@@ -35,6 +35,7 @@ Activate the dnlp environment by running:
 ```
 conda activate dnlp
 ```
+Details of the environment so that used libraries and dependencies can be found in environment.yml file
 
 ## Training
 Since the model is designed to perform three different NLP tasks, we train on three different datasets. More precisely, we use the [Standford Sentiment Treebank](https://nlp.stanford.edu/sentiment/treebank.html) (Socher et al., 2013), consisting of 11,855 single sentences from movie reviews extracted from movie reviews, to classify a text's sentiment. Further, we use the Quora dataset consisting of 400,000 question pairs to train for paraphrase detection. Lastly, we seek to measure the degree of semantic equivalence, using data from the SemEval STS Benchmark dataset consisting of 8,628 sentence pairs of varying similarity. 
@@ -141,7 +142,5 @@ Our model achieves the following performance on :
 
 | Model  | Paraphrase Accuarcy  | Sentiment Accuracy | Semantic Text Similarity Correlation |
 | ------------------ |---------------- | -------------- | --------------|
-| Multitask Classifier BERT Model |     89.01%         |      49.59%       |    88.00%    |
-
-During training, we create a text file with information about our best model from every epoch. 
-
+| Multitask Classifier BERT Model |     89.01%         |      49.59%       |    88.0%    |
+|Pretrained Model | 63.7% | 26.3% | 53.4% |

@@ -45,7 +45,6 @@ class BertSelfAttention(nn.Module):
     # normalize the scores
     # multiply the attention scores to the value and get back V'
     # next, we need to concat multi-heads and recover the original shape [bs, seq_len, num_attention_heads * attention_head_size = hidden_size]
-    ### TODO
     #Initial dimensions: [bs, num_attention_heads, seq_len, attention_head_size]
     dk = key.shape[3]
 
@@ -133,7 +132,6 @@ class BertLayer(nn.Module):
     3. a feed forward layer 
     4. a add-norm that takes the input and output of the feed forward layer
     """
-    ### TODO
     self_attention_output = self.self_attention.forward(hidden_states,attention_mask)
 
     normalized_attention_layer = self.add_norm(input=hidden_states, output=self_attention_output , 

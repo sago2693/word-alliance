@@ -1,7 +1,7 @@
 ================================================================================
-JobID = 4888886
+JobID = 4893882
 User = bzkurs49, Account = bzkurs49
-Partition = grete:shared, Nodelist = ggpu142
+Partition = grete:shared, Nodelist = ggpu109
 ================================================================================
 /scratch/usr/bzkurs49/anaconda3/bin/python
 /usr/local/cuda-12.0/bin:/scratch/usr/bzkurs49/poetry/bin:/scratch/usr/bzkurs49/poetry/bin:/scratch/usr/bzkurs49/anaconda3/bin:/scratch/usr/bzkurs49/anaconda3/condabin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/opt/ddn/ime/bin:/sw/hlrn/bin:/usr/local/slurm/slurm/current/install/bin:/usr/local/slurm/slurm/current/install/sbin:/home/bzkurs49/.local/bin:/home/bzkurs49/bin:/opt/ddn/ime/bin
@@ -14,7 +14,7 @@ pgkpr                    /scratch/usr/bzkurs49/anaconda3/envs/pgkpr
 Submitting job with sbatch from directory: /home/bzkurs49/repos/word-alliance
 Home directory: /home/bzkurs49
 Working directory: /home/bzkurs49/repos/word-alliance
-Current node: ggpu142
+Current node: ggpu109
 added http proxy
 Python 3.8.17
 Collecting environment information...
@@ -34,7 +34,7 @@ Python platform: Linux-4.18.0-425.19.2.el8_7.x86_64-x86_64-with-glibc2.17
 Is CUDA available: True
 CUDA runtime version: 12.0.140
 CUDA_MODULE_LOADING set to: LAZY
-GPU models and configuration: GPU 0: NVIDIA A100-SXM4-80GB
+GPU models and configuration: GPU 0: NVIDIA A100-SXM4-40GB
 Nvidia driver version: 530.30.02
 cuDNN version: Could not collect
 HIP runtime version: N/A
@@ -59,7 +59,7 @@ Stepping:            1
 CPU MHz:             2600.000
 CPU max MHz:         3681.6399
 CPU min MHz:         1500.0000
-BogoMIPS:            5200.05
+BogoMIPS:            5200.48
 Virtualization:      AMD-V
 L1d cache:           32K
 L1i cache:           32K
@@ -73,7 +73,7 @@ NUMA node4 CPU(s):   32-39,96-103
 NUMA node5 CPU(s):   40-47,104-111
 NUMA node6 CPU(s):   48-55,112-119
 NUMA node7 CPU(s):   56-63,120-127
-Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 invpcid_single hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr wbnoinvd amd_ppin arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smca fsrm
+Flags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 invpcid_single hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 invpcid cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr wbnoinvd amd_ppin arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smca
 
 Versions of relevant libraries:
 [pip3] numpy==1.24.2
@@ -103,11 +103,16 @@ Loaded 6040 train examples from data/sts-train.csv
 Loaded 1101 train examples from data/ids-sst-dev.csv
 Loaded 20212 train examples from data/quora-dev.csv
 Loaded 863 train examples from data/sts-dev.csv
-running the train on the cpu
+running the train on the cuda
+cuda
+Paraphrase detection accuracy: 0.865
+Sentiment classification accuracy: 0.428
+Semantic Textual Similarity correlation: 0.853
+the weighted avg 0.7389868178940119
 ============ Job Information ===================================================
-Submitted: 2023-09-02T22:01:35
-Started: 2023-09-02T22:01:45
-Ended: 2023-09-02T22:06:35
-Elapsed: 5 min, Limit: 150 min, Difference: 145 min
+Submitted: 2023-09-03T21:52:38
+Started: 2023-09-03T23:22:26
+Ended: 2023-09-03T23:34:13
+Elapsed: 12 min, Limit: 150 min, Difference: 138 min
 CPUs: 4, Nodes: 1
 Estimated NPL: ================================================================================
