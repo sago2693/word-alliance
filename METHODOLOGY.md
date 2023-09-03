@@ -41,6 +41,19 @@ The typical approach in curriculum learning for transfer learning tasks involves
 
 ““(Stickland and Murray, 2019) propose a technique called annealed sampling in which batch sampling is originally based on the ratio of dataset sizes and slowly anneals to an even distribution across all tasks as the current epoch number increases. These discoveries, when combined with curriculum research emerging from the field of reinforcement learning” (Worsham and Kalita, 2020, p. 6) (pdf). The formula of the annealed sampling introduces a factor alpha to which the dataset size must be raised:
 
+The proportion P_i is given by: 
+
+$$
+P_i ∝ N_i^\alpha
+$$
+
+Where α is defined as: 
+
+$$
+\alpha = 1 - 0.8 \left( \frac{e - 1}{E - 1} \right)
+$$
+
+
 The proportion \(\P_i\) is given by: 
 
 \[ \P_i \propto N_i^\alpha \]
