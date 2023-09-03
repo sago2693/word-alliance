@@ -8,6 +8,7 @@ from tqdm import tqdm
 from torch import nn
 from types import SimpleNamespace
 from tokenizers.processors import TemplateProcessing
+import torch.optim.lr_scheduler as lr_scheduler
 
 from datasets import SentenceClassificationDataset, SentencePairDataset, \
     load_multitask_data
@@ -73,13 +74,14 @@ class MultitaskBERT(nn.Module):
             raise ValueError("Invalid task_id value. Expected 0, 1, or 2.")
 
 
-# explanation of the function 
+# saves the model parameters and metadata for the training of the model 
 def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weighted_avg,  dev_sentiment_accuracy, dev_paraphrase_accuracy, dev_sts_corr,loss):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
     save_info = {
         'model': model.state_dict(),
         'optim': optimizer.state_dict(),
+        'scheduler': scheduler.state_dict(),
         'args': args,
         'model_config': config,
         'system_rng': random.getstate(),
@@ -93,7 +95,6 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
 
     os.makedirs(os.path.dirname("./Models_Meta_Data/"), exist_ok=True)
     txt_filename = os.path.join("./Models_Meta_Data/", f"{args.option}-epoch-number {epoch}-from-{args.epochs}-{args.lr}.txt")
-    # txt_filename = os.path.splitext(txt_path)[0] + ".txt"
     with open(txt_filename, 'w') as txt_file:
         txt_file.write(f"weighted_avg: {weighted_avg}\n")
         txt_file.write(f"dev_sentiment_accuracy: {dev_sentiment_accuracy}\n")
@@ -107,7 +108,8 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
         txt_file.write(f"Batch size: {batch_size}\n")
     print(f"save the model to {filepath}")
 
-#Collate function dependent on current task
+#class which processes and loads data in batches  
+class CustomCollateFn:
     def __init__(self, collate_fns):
         self.collate_fns = collate_fns
 
@@ -117,10 +119,8 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
         actual_batch = [actual_batch for _, actual_batch in batch]
         return collate_fn(actual_batch)
 
-
+# creates dataloader for multitask learning
 def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1,sampling='sequential'):
-
-    #Temporarily initialized here but later in epoch loop to update current epoch and do annealed sampling
     mtl_sampler = MultiTaskBatchSampler( datasets=train_datasets,
     current_epoch=current_epoch,
     total_epochs=total_epochs,
@@ -129,7 +129,7 @@ def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1
     extra_task_ratio=0,
     bin_size=64,
     bin_on=False,
-    bin_grow_ratio=0.5,
+    bin_grow_ratio=0.5, #groups samples in batches according to length, so that samples in a batch would have similar length 
     sampling=sampling)
 
     multi_task_train_dataset = MultiTaskDataset(train_datasets)
@@ -149,6 +149,7 @@ def create_mtl_dataloader(train_datasets,total_epochs,batch_size,current_epoch=1
         pin_memory=True
         )
 
+
 def train_multitask(args):
 
     device = torch.device('cuda') if args.use_gpu else torch.device('cpu')
@@ -157,14 +158,14 @@ def train_multitask(args):
     sst_train_data, num_labels,para_train_data, sts_train_data = load_multitask_data(args.sst_train,args.para_train,args.sts_train, split ='train')
     sst_dev_data, num_labels,para_dev_data, sts_dev_data = load_multitask_data(args.sst_dev,args.para_dev,args.sts_dev, split ='train') #It is correct to use this slit for dev. The other option is test which does not load the labels
 
-    #Sentiment analysis
+    #Sentiment Analysis
     sst_train_dataset = SentenceClassificationDataset(sst_train_data, args)
     sst_dev_dataset = SentenceClassificationDataset(sst_dev_data, args)
     #Paraphrasing
     paraphrase_train_dataset = SentencePairDataset(para_train_data, args, isRegression =False)
     paraphrase_dev_dataset = SentencePairDataset(para_dev_data, args, isRegression =False)
 
-    #sts
+    #Semantic Textual Similarity (STS)
     sts_train_dataset = SentencePairDataset(sts_train_data, args, isRegression =True)
     sts_dev_dataset = SentencePairDataset(sts_dev_data, args, isRegression =True)  
 
@@ -200,6 +201,7 @@ def train_multitask(args):
 
     lr = args.lr
     optimizer = AdamW(model.parameters(), lr=lr)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.95)
     best_metric = 0.2
     print(f"running the train on the {device}")
     # Run for the specified number of epochs
@@ -280,7 +282,7 @@ def train_multitask(args):
             dev_sts_corr, _, _) = model_eval_multitask(sst_dev_dataloader,
                                                                         paraphrase_dev_dataloader,sts_dev_dataloader,model, device  )
         
-        #We have to weight or average the three sores to save the best model.
+        #We have to weight or average the three scores to save the best model.
         # In the diven code only sst is used
 
         weighted_avg = 0.333 * dev_sentiment_accuracy + 0.333 * dev_paraphrase_accuracy + 0.333 * ((dev_sts_corr +1) / 2)
