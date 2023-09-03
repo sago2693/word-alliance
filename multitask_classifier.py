@@ -188,6 +188,9 @@ def train_multitask(args):
     #MTL data loader
     train_datasets = [sst_train_dataset,paraphrase_train_dataset, sts_train_dataset]
 
+    
+    multi_task_train_data = create_mtl_dataloader(train_datasets=train_datasets,
+                                            total_epochs=args.epochs,batch_size=args.batch_size)
     #Create dev dataloaders
     sst_dev_dataloader = DataLoader(sst_dev_dataset, shuffle=False, batch_size=args.batch_size,
                                     collate_fn=sst_dev_dataset.collate_fn, pin_memory=True )
@@ -220,7 +223,8 @@ def train_multitask(args):
         
     for epoch in range(args.epochs):
 
-        multi_task_train_data = create_mtl_dataloader(train_datasets=train_datasets,
+        if args.annealed_sampling:
+            multi_task_train_data = create_mtl_dataloader(train_datasets=train_datasets,
                                                   total_epochs=args.epochs,batch_size=args.batch_size,
                                                   current_epoch=(epoch+1),sampling="annealed")
             
@@ -360,6 +364,8 @@ def get_args():
                         default=1e-3)
     parser.add_argument("--local_files_only", action='store_true')
     
+    parser.add_argument("--annealed_sampling", action='store_true')
+
     args = parser.parse_args()
     return args
 
