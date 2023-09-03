@@ -4,9 +4,14 @@
 
 In this file we list each member's contribution for the project.
 
-Gonzales, Sergio:
+Gonzalez, Sergio:
+* Initial cluster setup (relocating conda installation to overcome disk space limitations, open ports)
+* Defined methodology for Multi-task learning (Loss function, dataloader)
+* Updated evaluation.py to standardize inputs as single bert input_ids instead of pairs
+* Modified datasets.py and bert.py from part 1 to concatenate sentences and create updated attention_masks with tokenizer
+* Experimented with annealed sampling 
+* Contributed with assigning task
 
-* 
 Ksiezak, Kacper:
 
 * Contributed to Bert encoding part, attention 
