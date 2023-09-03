@@ -1,4 +1,4 @@
-# It is better to copy the code here instead of importing to prevent the arg part from running
+
 import torch
 
 from torch.utils.data import DataLoader, Subset
@@ -56,7 +56,6 @@ class MultitaskBERT(nn.Module):
                 param.requires_grad = False
             elif config.option == 'finetune':
                 param.requires_grad = True
-        ### TODO
         self.drop = torch.nn.Dropout(p=0.3)
         self.sst_classifier = torch.nn.Linear(self.bert.config.hidden_size, N_SENTIMENT_CLASSES)
         self.para_classifier = torch.nn.Linear(self.bert.config.hidden_size, 1)
@@ -67,9 +66,6 @@ class MultitaskBERT(nn.Module):
     def forward(self, input_ids, attention_mask,token_type_ids):
         'Takes a batch of sentences and produces embeddings for them.'
         # The final BERT embedding is the hidden state of [CLS] token (the first token)
-        # Here, you can start by just returning the embeddings straight from BERT.
-        # When thinking of improvements, you can later try modifying this
-        # (e.g., by adding other layers).
         bert_out = self.bert(input_ids, attention_mask,token_type_ids) 
         dropped = self.drop(bert_out['pooler_output'])
         return dropped
@@ -100,8 +96,7 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
         'numpy_rng': np.random.get_state(),
         'torch_rng': torch.random.get_rng_state(),
     }
-    # while os.path.exists(os.path.join(filepath, f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")):
-        # model_number += 1
+
 
     model_path = os.path.join(filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{batch_size}.pt")
     torch.save(save_info, model_path)
@@ -123,7 +118,6 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
     print(f"save the model to {filepath}")
 
 #Collate function dependent on current task
-class CustomCollateFn:
     def __init__(self, collate_fns):
         self.collate_fns = collate_fns
 
