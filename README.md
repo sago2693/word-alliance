@@ -138,8 +138,6 @@ Worsham, J., & Kalita, J. (2020). Multi-task learning for natural language proce
 
 ## Results
 
-## Results
-
 Our model achieves the following performance on :
 
 | Model  | Paraphrase Accuarcy  | Sentiment Accuracy | Semantic Text Similarity Correlation |
