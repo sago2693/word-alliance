@@ -1,23 +1,19 @@
 # It is better to copy the code here instead of importing to prevent the arg part from running
 import torch
 
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader
 import time, random, numpy as np, argparse
 import torch.nn.functional as F
 from tqdm import tqdm
 from torch import nn
 from types import SimpleNamespace
-from tokenizers.processors import TemplateProcessing
-
 from datasets import SentenceClassificationDataset, SentencePairDataset, \
     load_multitask_data
 from bert import BertModel
 from data_loader import MultiTaskBatchSampler,MultiTaskDataset
 from optimizer import AdamW
-
 from evaluation import model_eval_sst, test_model_multitask, model_eval_multitask, compute_loss_weights
 from tokenizer import BertTokenizer
-
 import os
 
 N_SENTIMENT_CLASSES = 5
@@ -367,6 +363,16 @@ def get_args():
     parser.add_argument("--annealed_sampling", action='store_true')
 
     args = parser.parse_args()
+    
+    args.sts_test_out = f"predictions/prediction_test/sts_test_out-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    args.para_test_out = f"predictions/prediction_test/para_test_out-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    args.sst_test_out = f"predictions/prediction_test/sst_test_out-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+
+    args.para_dev_out = f"./predictions/prediction_evaluation/para_dev_out-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    args.sst_dev_out = f"predictions/prediction_evaluation/sst_dev_out-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    args.sts_dev_out = f"predictions/prediction_evaluation/sts_dev_out-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
+    
+
     return args
 
 if __name__ == "__main__":
@@ -375,10 +381,5 @@ if __name__ == "__main__":
     args.filepath = f'./models/' # save path
     seed_everything(args.seed)  # fix the seed for reproducibility
     train_multitask(args)
-    args.sts_test_out = f"{args.sts_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
-    args.para_test_out = f"{args.para_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
-    args.sst_test_out = f"{args.sst_test_out}-{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.csv"
-    
-    model_path = os.path.join( args.filepath,  f"{args.option}-epoch-number-from-{args.epochs}-{args.lr}-model_batch_size_{args.batch_size}.pt")
-    test_model(args, model_path)
+
 

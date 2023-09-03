@@ -20,6 +20,7 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import classification_report, f1_score, recall_score, accuracy_score
 from tqdm import tqdm
 import numpy as np
+from torch import nn 
 
 from datasets import load_multitask_data, load_multitask_test_data, \
     SentenceClassificationDataset, SentenceClassificationTestDataset, \
@@ -112,7 +113,14 @@ def model_eval_multitask(sentiment_dataloader,
             logits = model.predict(input_ids=b_ids,attention_mask=b_mask,
                       token_type_ids=b_token_type_ids,task_id= b_task_id)
             
-            y_hat = logits.flatten().cpu().numpy()
+            y_hat = logits.flatten()
+            sigmoid = nn.Sigmoid()  #maps logits to range 0 to 1
+            y_hat = sigmoid(y_hat)  * 5 
+            y_hat = torch.round(y_hat , decimals=4)
+            y_hat = y_hat.cpu().numpy()
+
+
+
             b_labels = b_labels.flatten().cpu().numpy()/ 5 #TO MATCH THE RANGE FROM 0 TO 1
 
             sts_y_pred.extend(y_hat)
@@ -206,7 +214,11 @@ def model_eval_test_multitask(sentiment_dataloader,
             logits = model.predict(input_ids=b_ids,attention_mask=b_mask,
                       token_type_ids=b_token_type_ids,task_id= b_task_id)
             
-            y_hat = logits.flatten().cpu().numpy()
+            y_hat = logits.flatten()
+            sigmoid = nn.Sigmoid()  #maps logits to range 0 to 1
+            y_hat = sigmoid(y_hat)  * 5 
+            y_hat = torch.round(y_hat , decimals=4)
+            y_hat = y_hat.cpu().numpy()
 
             sts_y_pred.extend(y_hat)
             sts_sent_ids.extend(b_sent_ids)
@@ -309,12 +321,12 @@ def test_model_multitask(args, model, device):
             print(f"dev sts corr :: {dev_sts_corr :.3f}")
             f.write(f"id \t Predicted_Similiary \n")
             for p, s in zip(dev_sts_sent_ids, dev_sts_y_pred):
-                f.write(f"{p} , {s} \n")
+                f.write(f"{p} , {s  :.4f} \n")
 
         with open(args.sts_test_out, "w+") as f:
             f.write(f"id \t Predicted_Similiary \n")
             for p, s in zip(test_sts_sent_ids, test_sts_y_pred):
-                f.write(f"{p} , {s}, \n")
+                f.write(f"{p} , {s  :.4f} \n")
 
 
 ###Evaluate loss function weighted by the variance 
