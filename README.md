@@ -138,10 +138,13 @@ Worsham, J., & Kalita, J. (2020). Multi-task learning for natural language proce
 
 ## Results
 
+## Results
+
 Our model achieves the following performance on :
 
-| Model name         | Top 1 Accuracy  | Top 5 Accuracy |
-| ------------------ |---------------- | -------------- |
-| My awesome model   |     85%         |      95%       |
+| Model  | Paraphrase Accuarcy  | Sentiment Accuracy | Semantic Text Similarity Correlation |
+| ------------------ |---------------- | -------------- | --------------|
+| Multitask Classifier BERT Model |     89.01%         |      49.59%       |    88.0%    |
+|Pretrained Modle | 63.7% | 26.3% | 53.4% |
 
->📋  Include a table of results from your paper, and link back to the leaderboard for clarity and context. If your main result is a figure, include that figure and link to the command or notebook to reproduce it. 
+During training, we create a text file with information about our best model from every epoch. 
