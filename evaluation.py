@@ -66,9 +66,7 @@ def model_eval_multitask(sentiment_dataloader,
                          paraphrase_dataloader,
                          sts_dataloader,
                          model, device):
-    print("iam inside eval")
     model.eval()  # switch to eval model, will turn off randomness like dropout
-    print("iam inside eval 2 ")
     print(device)
     with torch.no_grad():
         para_y_true = []
