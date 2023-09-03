@@ -48,9 +48,25 @@ class MultitaskBERT(nn.Module):
             elif config.option == 'finetune':
                 param.requires_grad = True
         self.drop = torch.nn.Dropout(p=0.3)
-        self.sst_classifier = torch.nn.Linear(self.bert.config.hidden_size, N_SENTIMENT_CLASSES)
-        self.para_classifier = torch.nn.Linear(self.bert.config.hidden_size, 1)
-        self.sts_classifier = torch.nn.Linear(self.bert.config.hidden_size, 1)
+
+
+        self.sst_classifier = nn.Sequential(nn.Linear(self.bert.config.hidden_size, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, N_SENTIMENT_CLASSES))
+        
+        self.para_classifier = nn.Sequential(nn.Linear(self.bert.config.hidden_size, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, 1))
+        
+        self.sts_classifier = nn.Sequential(nn.Linear(self.bert.config.hidden_size, 256),
+            nn.ReLU(),
+            nn.Linear(256, 128),
+            nn.ReLU(),
+            nn.Linear(128, 1))
 
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', local_files_only=config.local_files_only)
 
