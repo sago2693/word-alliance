@@ -21,7 +21,7 @@ from tokenizer import BertTokenizer
 import os
 
 N_SENTIMENT_CLASSES = 5
-TQDM_DISABLE=False
+BERT_HIDDEN_SIZE = 768
 
 
 # fix the random seed
@@ -35,17 +35,7 @@ def seed_everything(seed=11711):
     torch.backends.cudnn.deterministic = True
 
 
-BERT_HIDDEN_SIZE = 768
-
-
 class MultitaskBERT(nn.Module):
-    '''
-    This module should use BERT for 3 tasks:
-
-    - Sentiment classification (predict_sentiment)
-    - Paraphrase detection (predict_paraphrase)
-    - Semantic Textual Similarity (predict_similarity)
-    '''
     def __init__(self, config):
         super(MultitaskBERT, self).__init__()
         # You will want to add layers here to perform the downstream tasks.
@@ -83,7 +73,7 @@ class MultitaskBERT(nn.Module):
             raise ValueError("Invalid task_id value. Expected 0, 1, or 2.")
 
 
-
+# explanation of the function 
 def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weighted_avg,  dev_sentiment_accuracy, dev_paraphrase_accuracy, dev_sts_corr,loss):
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
 
@@ -122,8 +112,7 @@ def save_model(model, optimizer, args, config, filepath,epoch, batch_size, weigh
         self.collate_fns = collate_fns
 
     def __call__(self, batch):
-        task_id,_= batch[0] #This tuple is defined in the MultiTaskDataset class
-        #This only works if a batch only contains data from one task
+        task_id,_= batch[0] 
         collate_fn = self.collate_fns[task_id]
         actual_batch = [actual_batch for _, actual_batch in batch]
         return collate_fn(actual_batch)
@@ -229,7 +218,7 @@ def train_multitask(args):
         paraphrase_train_loss_list = []
         sts_train_loss_list = []
 
-        for batch in tqdm(multi_task_train_data, desc=f'train-{epoch}', disable=TQDM_DISABLE):
+        for batch in tqdm(multi_task_train_data, desc=f'train-{epoch}', disable=args.tqdm_disable):
 
             optimizer.zero_grad()
             b_task_id, b_ids, b_mask, b_token_type_ids, b_labels = (
@@ -306,18 +295,13 @@ def train_multitask(args):
 
 def test_model(args, path ):
     with torch.no_grad():
-        device = torch.device('cuda') if True else torch.device('cpu')
-        # saved = torch.load(args.filepath)
-        ###TODO change the file path to the one with the best peformance in terms of the best metric
-        
+        device = torch.device('cuda') if True else torch.device('cpu')        
         saved = torch.load(path)
         config = saved['model_config']
-
         model = MultitaskBERT(config)
         model.load_state_dict(saved['model'])
         model = model.to(device)
         print(f"Loaded model to test from {args.filepath}")
-
         test_model_multitask(args, model, device)
 
 
@@ -359,6 +343,7 @@ def get_args():
     parser.add_argument("--local_files_only", action='store_true')
     
     parser.add_argument("--annealed_sampling", action='store_true')
+    parser.add_argument("--tqdm_disable", action='store_true')
 
     args = parser.parse_args()
     return args
