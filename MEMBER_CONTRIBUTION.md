@@ -9,7 +9,13 @@ Gonzales, Sergio:
 * 
 Ksiezak, Kacper:
 
-*
+* Contributed to Bert encoding part, attention 
+* contributed to forward method of multitask_classifier
+* experiments with scheduler
+* contributed to conducting the code according to the guidelines
+* contributed to training function of multitask classifier 
+* general debugging of code
+*    
 
 Aldahi, Hasan:
 
@@ -28,4 +34,4 @@ Tran Ortega, Daniel:
 
 Kemal, Alp Sezer:
 
-*
+* 
