@@ -30,8 +30,7 @@ $$
 $$
 
 According to (Lauscher et al., 2018) the Loss function with that weighting equals:
-$$
-The total loss is given by the equation: $$\text{Total loss} = \sum_{t} \frac{1}{2\sigma_{t}^{2}} L_{t} + \ln(\sigma_{t}^{2})$$
+ $$\text{Total loss} = \sum_{t} \frac{1}{2\sigma_{t}^{2}} L_{t} + \ln(\sigma_{t}^{2})$$
 
 
 Given the project's goal of havingthe best overall performance in the 3 tasks, we will use the dynamic weight assignment to ensure that the gradients are driven by the less noisy task to possibly have a slower but more stable learning.
@@ -41,6 +40,17 @@ Given the project's goal of havingthe best overall performance in the 3 tasks, w
 The typical approach in curriculum learning for transfer learning tasks involves constructing mini-batches that comprise examples specific to an individual task. Subsequently, during training, there is an alternating progression between these tasks. (Worsham and Kalita, 2020, p. 6) 
 
 ““(Stickland and Murray, 2019) propose a technique called annealed sampling in which batch sampling is originally based on the ratio of dataset sizes and slowly anneals to an even distribution across all tasks as the current epoch number increases. These discoveries, when combined with curriculum research emerging from the field of reinforcement learning” (Worsham and Kalita, 2020, p. 6) (pdf). The formula of the annealed sampling introduces a factor alpha to which the dataset size must be raised:
+
+The proportion \(\P_i\) is given by: 
+
+\[ \P_i \propto N_i^\alpha \]
+
+
+Where \(\alpha\) is defined as: 
+
+\[ \alpha = 1 - 0.8 \left( \frac{e - 1}{E - 1} \right) \]
+
+
 $$
 \P_i \propto N_i^\alpha
 $$
