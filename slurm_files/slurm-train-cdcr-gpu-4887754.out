@@ -469,3 +469,247 @@ outside eval
 the weighted avg 0.7687648372811691
 Epoch 28: train loss : 15274.956, dev paraphrase acc : 0.891, dev sentiment acc : 0.492, dev sts corr : 0.851, Best Metric : 0.775
 17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.497
+Semantic Textual Similarity correlation: 0.862
+outside eval 
+the weighted avg 0.7710093241471784
+Epoch 29: train loss : 11036.730, dev paraphrase acc : 0.887, dev sentiment acc : 0.497, dev sts corr : 0.862, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.497
+Semantic Textual Similarity correlation: 0.845
+outside eval 
+the weighted avg 0.7683323827044912
+Epoch 30: train loss : 12902.761, dev paraphrase acc : 0.888, dev sentiment acc : 0.497, dev sts corr : 0.845, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.890
+Sentiment classification accuracy: 0.488
+Semantic Textual Similarity correlation: 0.848
+outside eval 
+the weighted avg 0.7664908933220296
+Epoch 31: train loss : 12511.573, dev paraphrase acc : 0.890, dev sentiment acc : 0.488, dev sts corr : 0.848, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.889
+Sentiment classification accuracy: 0.504
+Semantic Textual Similarity correlation: 0.856
+outside eval 
+the weighted avg 0.772909157479421
+Epoch 32: train loss : 11762.343, dev paraphrase acc : 0.889, dev sentiment acc : 0.504, dev sts corr : 0.856, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.889
+Sentiment classification accuracy: 0.488
+Semantic Textual Similarity correlation: 0.843
+outside eval 
+the weighted avg 0.7652929598426697
+Epoch 33: train loss : 8277.031, dev paraphrase acc : 0.889, dev sentiment acc : 0.488, dev sts corr : 0.843, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.493
+Semantic Textual Similarity correlation: 0.855
+outside eval 
+the weighted avg 0.7689062153018256
+Epoch 34: train loss : 7675.628, dev paraphrase acc : 0.888, dev sentiment acc : 0.493, dev sts corr : 0.855, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.490
+Semantic Textual Similarity correlation: 0.852
+outside eval 
+the weighted avg 0.7673577328217243
+Epoch 35: train loss : 12294.518, dev paraphrase acc : 0.888, dev sentiment acc : 0.490, dev sts corr : 0.852, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.490
+Semantic Textual Similarity correlation: 0.852
+outside eval 
+the weighted avg 0.7666765910320205
+Epoch 36: train loss : 7615.967, dev paraphrase acc : 0.887, dev sentiment acc : 0.490, dev sts corr : 0.852, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.493
+Semantic Textual Similarity correlation: 0.847
+outside eval 
+the weighted avg 0.7670832650184003
+Epoch 37: train loss : 11667.361, dev paraphrase acc : 0.887, dev sentiment acc : 0.493, dev sts corr : 0.847, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.889
+Sentiment classification accuracy: 0.494
+Semantic Textual Similarity correlation: 0.852
+outside eval 
+the weighted avg 0.7690090707456213
+Epoch 38: train loss : 10690.404, dev paraphrase acc : 0.889, dev sentiment acc : 0.494, dev sts corr : 0.852, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.886
+Sentiment classification accuracy: 0.500
+Semantic Textual Similarity correlation: 0.850
+outside eval 
+the weighted avg 0.7698375954769264
+Epoch 39: train loss : 7606.314, dev paraphrase acc : 0.886, dev sentiment acc : 0.500, dev sts corr : 0.850, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.886
+Sentiment classification accuracy: 0.499
+Semantic Textual Similarity correlation: 0.863
+outside eval 
+the weighted avg 0.7713414880883838
+Epoch 40: train loss : 6777.962, dev paraphrase acc : 0.886, dev sentiment acc : 0.499, dev sts corr : 0.863, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.887
+Sentiment classification accuracy: 0.507
+Semantic Textual Similarity correlation: 0.831
+outside eval 
+the weighted avg 0.7689578606400593
+Epoch 41: train loss : 7771.242, dev paraphrase acc : 0.887, dev sentiment acc : 0.507, dev sts corr : 0.831, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.889
+Sentiment classification accuracy: 0.498
+Semantic Textual Similarity correlation: 0.851
+outside eval 
+the weighted avg 0.7699877013809195
+Epoch 42: train loss : 9770.457, dev paraphrase acc : 0.889, dev sentiment acc : 0.498, dev sts corr : 0.851, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.500
+Semantic Textual Similarity correlation: 0.854
+outside eval 
+the weighted avg 0.7706891658859141
+Epoch 43: train loss : 8901.943, dev paraphrase acc : 0.888, dev sentiment acc : 0.500, dev sts corr : 0.854, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.886
+Sentiment classification accuracy: 0.500
+Semantic Textual Similarity correlation: 0.836
+outside eval 
+the weighted avg 0.7671524128673022
+Epoch 44: train loss : 6271.197, dev paraphrase acc : 0.886, dev sentiment acc : 0.500, dev sts corr : 0.836, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.882
+Sentiment classification accuracy: 0.494
+Semantic Textual Similarity correlation: 0.830
+outside eval 
+the weighted avg 0.7631226165521334
+Epoch 45: train loss : 6095.745, dev paraphrase acc : 0.882, dev sentiment acc : 0.494, dev sts corr : 0.830, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.888
+Sentiment classification accuracy: 0.473
+Semantic Textual Similarity correlation: 0.848
+outside eval 
+the weighted avg 0.7609215459380766
+Epoch 46: train loss : 7472.263, dev paraphrase acc : 0.888, dev sentiment acc : 0.473, dev sts corr : 0.848, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.890
+Sentiment classification accuracy: 0.496
+Semantic Textual Similarity correlation: 0.835
+outside eval 
+the weighted avg 0.7670457760145823
+Epoch 47: train loss : 7050.432, dev paraphrase acc : 0.890, dev sentiment acc : 0.496, dev sts corr : 0.835, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.890
+Sentiment classification accuracy: 0.492
+Semantic Textual Similarity correlation: 0.852
+outside eval 
+the weighted avg 0.7685268973754285
+Epoch 48: train loss : 5253.912, dev paraphrase acc : 0.890, dev sentiment acc : 0.492, dev sts corr : 0.852, Best Metric : 0.775
+17
+inside eval 
+iam inside eval
+iam inside eval 2 
+cuda
+Paraphrase detection accuracy: 0.889
+Sentiment classification accuracy: 0.482
+Semantic Textual Similarity correlation: 0.845
+outside eval 
+the weighted avg 0.7638381907199363
+Epoch 49: train loss : 5813.368, dev paraphrase acc : 0.889, dev sentiment acc : 0.482, dev sts corr : 0.845, Best Metric : 0.775
+Loaded model to test from ./models/
+Loaded 2210 test examples from data/ids-sst-test-student.csv
+Loaded 40429 test examples from data/quora-test-student.csv
+Loaded 1379 test examples from data/sts-test-student.csv
+Loaded 1101 dev examples from data/ids-sst-dev.csv
+Loaded 20212 dev examples from data/quora-dev.csv
+Loaded 863 dev examples from data/sts-dev.csv
+============ Job Information ===================================================
+Submitted: 2023-09-02T17:34:50
+Started: 2023-09-02T17:34:50
+Ended: 2023-09-03T03:00:26
+Elapsed: 566 min, Limit: 1440 min, Difference: 874 min
+CPUs: 4, Nodes: 1
+Estimated NPL: ================================================================================
