@@ -31,8 +31,8 @@ $$
 
 According to (Lauscher et al., 2018) the Loss function with that weighting equals:
 $$
-\text{Total loss} = \sum_{t} \frac{1}{2\sigma_{t}^{2}} L_{t} + \ln(\sigma_{t}^{2})
-$$
+The total loss is given by the equation: $$\text{Total loss} = \sum_{t} \frac{1}{2\sigma_{t}^{2}} L_{t} + \ln(\sigma_{t}^{2})$$
+
 
 Given the project's goal of havingthe best overall performance in the 3 tasks, we will use the dynamic weight assignment to ensure that the gradients are driven by the less noisy task to possibly have a slower but more stable learning.
 
