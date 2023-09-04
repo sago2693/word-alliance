@@ -1,0 +1,9 @@
+weighted_avg: 0.7570701239837784
+dev_sentiment_accuracy: 0.46139872842870117
+dev_paraphrase_accuracy: 0.873095190975658
+dev_sts_corr: 0.8779798728055659
+Loss: 80509.96262617559
+Epoch: 5
+from total Epochs: 10
+Learning rate: 1e-05
+Batch size: 64
