@@ -7,7 +7,7 @@ In this repository you will find code for the final project of the the _M.Inf.22
 In this project, important components of the BERT model are implemented. 
 Embeddings produced by our BERT model were used for three downstream tasks: sentiment classification, paraphrase detection and semantic similarity.
 
-We implemented [ADD EXTENSION HERE] to improve the baseline model.
+We implemented [a Multi-task learning methodology](METHODOLOGY.md) to improve the baseline model.
 
 ## Requirements
 * Make sure you have Anaconda or Miniconda installed.
