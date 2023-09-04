@@ -24,7 +24,16 @@ Ksiezak, Kacper:
 
 Aldahi, Hasan:
 
-*
+* Contributed to general debugging, fixing coding errors, managing git file versions. 
+*Added and enhanced some of the code functionalities. 
+*Contributed to the Analysis of best model by adding Meta Data for each model. 
+*Added Predictmodel.py for prediction and formatted the output files in the evaluation.py file. 
+ *Added the Metrics for having the best model. 
+*Experimenting multiple coding and methodologies and approaches to implement. 
+*Accessing the Cluster and make the word CUDA functional.
+*Contributed in the checking the architecture of the transformer paper and its implementation. 
+* Debugging and Adding the necessary codes to implement Bert.py. 
+*Enhanced  the code readability by adding comments and deleting redundancy
 
 Tran Ortega, Daniel:
 
