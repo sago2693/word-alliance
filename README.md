@@ -83,3 +83,9 @@ Our model achieves the following performance on :
 
 During training, we create a text file with information about our best model from every epoch. 
 
+
+| Model  | Paraphrase Accuarcy  | Sentiment Accuracy | Semantic Text Similarity Correlation |
+| ------------------ |---------------- | -------------- | --------------|
+| Multitask Classifier pretrain BERT Model |     26.34%         |      62.47%       |    37.30%    |
+
+For experiment we checked the model performance when setting it to 'pretrain' instead of 'finetune'. As expected the results were not satisfying, since we have freezed weights which are not updating the model can't learn efficiently and only task specific layers are updating weights. 
