@@ -48,6 +48,9 @@ $$
 
  Given the considerable difference of sizes between the paraphrase identification dataset and the other two (140.000 vs around 7000), We use this technique to aim for a balanced distibution of samples at the end of the training.
 
+## Learning rate scheduling 
+Another approach to improve the results was implementing learning rate scheduling. We used StepLR which reduces learning rate every epoch (set by step size after how many epochs we reduce the learning rate). It is done in order to prevent overfitting and overcome possible overshooting an optimum. It allows the model to train more efficiently. Since we already start with small learning rate we used 0.9 gamma factor to not reduce the learning rate too much. we tried different values, but in the end it didn't improve results significantly. 
+
 ## Note for STS
 Based on [a Sentence transformer implementation](https://www.sbert.net/examples/training/sts/README.html) we train our network normalizing the textual similarity scores to a range of 0-1. This can simply be done by dividing the score by 5.
 
