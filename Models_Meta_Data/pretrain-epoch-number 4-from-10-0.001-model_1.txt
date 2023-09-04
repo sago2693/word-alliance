@@ -1,0 +1,10 @@
+Model 1 information:
+weighted_avg: 0.5243350327736912
+dev_sentiment_accuracy: 0.2633969118982743
+dev_paraphrase_accuracy: 0.6246784088660202
+dev_paraphrase_accuracy: 0.3730087144695564
+Loss: 0.46372570656239986
+Epoch: 4
+from total Epochs: 10
+Learning rate: 0.001
+Batch size: 64

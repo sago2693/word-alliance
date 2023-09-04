@@ -15,6 +15,7 @@ def search_bin(bins, size):
             break
     return idx
 
+#class to create batches 
 class MultiTaskBatchSampler(BatchSampler):
     def __init__(
         self,
@@ -95,10 +96,6 @@ class MultiTaskBatchSampler(BatchSampler):
 
     def __iter__(self):
         all_iters = [iter(item) for item in self._train_data_list]
-        #Conditional to sampling type
-        # all_indices = self._gen_task_indices(
-        #     self._train_data_list, self._mix_opt, self._extra_task_ratio
-        # )
         if self.sampling=='sequential':
             all_indices = self._gen_task_indices(
                 self._train_data_list
@@ -121,8 +118,6 @@ self.total_epochs
                 batch = next(all_iters[local_task_idx])
                 yield [(task_id, sample_id) for sample_id in batch]
             except StopIteration:
-                # The current task has no more batches,stop the whole training
-                # Could result in lower performance, we must see.
                 break
 
     @staticmethod
@@ -168,6 +163,7 @@ self.total_epochs
         
         return all_indices
     
+    # 
     def _gen_task_indices_annealed(self, train_data_list, current_epoch, total_epochs):
         num_tasks = len(train_data_list)
         
@@ -178,13 +174,14 @@ self.total_epochs
         dataset_sizes = [len(dataset) for dataset in train_data_list]
         probs = np.array(dataset_sizes) ** alpha
         probs /= np.sum(probs)
-                # Generate task indices based on probabilities
+        
+        # Generate task indices based on probabilities
         task_indices = np.random.choice(range(num_tasks), size=self.__len__(), p=probs)
         
         return task_indices.tolist()
     
 
-
+# combine data from multiple datasets into one 
 class MultiTaskDataset(Dataset):
     def __init__(self, datasets):
         self._datasets = datasets
